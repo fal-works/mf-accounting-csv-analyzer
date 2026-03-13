@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CSV インポート</title>
+<link rel="stylesheet" href="csv-importer.css">
+</head>
+<body>
+
+<h1>CSV インポート</h1>
+
+<div id="drop-zone">
+  <input type="file" accept=".csv" multiple>
+  CSVファイルをドラッグ＆ドロップ（またはクリックして選択）
+</div>
+
+<div id="log"></div>
+
+<details id="type-defs">
+  <summary>対応CSVタイプ一覧</summary>
+  <table>
+    <thead><tr><th>保存名</th><th>判定方法（ヘッダーに含まれるカラム）</th></tr></thead>
+    <tbody id="type-defs-body"></tbody>
+  </table>
+</details>
+
+<script type="module" src="dist/csv-importer.js"></script>
+</body>
+</html>

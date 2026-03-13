@@ -1,0 +1,143 @@
+#!/usr/bin/env python3
+"""仕訳帳の税区分チェック。
+
+使い方:
+    python check_tax.py <仕訳帳.csv>
+
+チェック内容:
+  1. 税区分が既知の有効な値であるか
+  2. 売上科目に売上系の税区分、仕入科目に仕入系の税区分が設定されているか
+  3. 非課税であるべき科目（事業主貸・事業主借・元入金等）に課税区分が設定されていないか
+  4. 借方と貸方で税区分の組み合わせが矛盾していないか
+"""
+
+import argparse
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from common import load_journal, print_error, print_header, print_ok, print_warning
+
+# 有効な税区分
+VALID_TAX_CATEGORIES = {
+    "",
+    "対象外",
+    "課税売上 10% 五種",
+    "課税仕入 10%",
+    "対象外仕入",
+}
+
+# 売上系の税区分
+SALES_TAX = {"課税売上 10% 五種"}
+
+# 仕入系の税区分
+PURCHASE_TAX = {"課税仕入 10%", "対象外仕入"}
+
+# 常に対象外であるべき勘定科目
+NON_TAXABLE_ACCOUNTS = {
+    "事業主貸", "事業主借", "元入金", "現金", "普通預金", "売掛金", "未払金", "機械装置",
+}
+
+# 売上科目
+SALES_ACCOUNTS = {"売上高"}
+
+# 仕入・経費科目
+EXPENSE_ACCOUNTS = {
+    "支払手数料", "水道光熱費", "通信費", "広告宣伝費", "消耗品費",
+    "新聞図書費",
+}
+
+
+def check_tax_categories(rows: list[dict]) -> int:
+    """税区分の妥当性をチェックする。"""
+    errors = 0
+
+    # --- チェック1: 有効な税区分かどうか ---
+    print_header("税区分の有効値チェック")
+    invalid_count = 0
+    for row in rows:
+        for side, col in [("借方", "借方税区分"), ("貸方", "貸方税区分")]:
+            val = row[col]
+            if val not in VALID_TAX_CATEGORIES:
+                print_error(
+                    f"取引No {row['取引No']} ({row['取引日']}): "
+                    f"{side}に未知の税区分「{val}」"
+                )
+                invalid_count += 1
+
+    if invalid_count == 0:
+        print_ok("すべての税区分が有効値です")
+    else:
+        print_warning(f"{invalid_count}件の未知の税区分があります")
+    errors += invalid_count
+
+    # --- チェック2: 科目と税区分の対応チェック ---
+    print_header("科目と税区分の整合性チェック")
+    mismatch_count = 0
+
+    for row in rows:
+        tx_info = f"取引No {row['取引No']} ({row['取引日']})"
+
+        # 借方科目のチェック
+        d_account = row["借方勘定科目"]
+        d_tax = row["借方税区分"]
+        if d_account and d_tax:
+            # 非課税科目に課税区分が付いている
+            if d_account in NON_TAXABLE_ACCOUNTS and d_tax not in {"対象外", ""}:
+                print_error(f"{tx_info}: 借方「{d_account}」に税区分「{d_tax}」は不適切")
+                mismatch_count += 1
+
+            # 売上科目に仕入税区分
+            if d_account in SALES_ACCOUNTS and d_tax in PURCHASE_TAX:
+                print_error(f"{tx_info}: 借方「{d_account}」に仕入系税区分「{d_tax}」")
+                mismatch_count += 1
+
+            # 経費科目に売上税区分
+            if d_account in EXPENSE_ACCOUNTS and d_tax in SALES_TAX:
+                print_error(f"{tx_info}: 借方「{d_account}」に売上系税区分「{d_tax}」")
+                mismatch_count += 1
+
+        # 貸方科目のチェック
+        c_account = row["貸方勘定科目"]
+        c_tax = row["貸方税区分"]
+        if c_account and c_tax:
+            if c_account in NON_TAXABLE_ACCOUNTS and c_tax not in {"対象外", ""}:
+                print_error(f"{tx_info}: 貸方「{c_account}」に税区分「{c_tax}」は不適切")
+                mismatch_count += 1
+
+            if c_account in SALES_ACCOUNTS and c_tax in PURCHASE_TAX:
+                print_error(f"{tx_info}: 貸方「{c_account}」に仕入系税区分「{c_tax}」")
+                mismatch_count += 1
+
+            if c_account in EXPENSE_ACCOUNTS and c_tax in SALES_TAX:
+                print_error(f"{tx_info}: 貸方「{c_account}」に売上系税区分「{c_tax}」")
+                mismatch_count += 1
+
+    if mismatch_count == 0:
+        print_ok("科目と税区分の対応に問題はありません")
+    else:
+        print_warning(f"{mismatch_count}件の不整合があります")
+    errors += mismatch_count
+
+    return errors
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="仕訳帳の税区分チェック")
+    parser.add_argument("journal", help="仕訳帳CSVファイルのパス")
+    args = parser.parse_args()
+
+    journal = load_journal(args.journal)
+    errors = check_tax_categories(journal)
+
+    print()
+    if errors > 0:
+        print(f"合計 {errors} 件のエラーが見つかりました。")
+        sys.exit(1)
+    else:
+        print("すべてのチェックに合格しました。")
+
+
+if __name__ == "__main__":
+    main()

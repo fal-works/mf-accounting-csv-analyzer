@@ -1,0 +1,18 @@
+{
+  "name": "mf-accounting-csv-analyzer",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p gui/tsconfig.json && tsc -p gui/tsconfig.browser.json",
+    "typecheck": "tsc -p gui/tsconfig.json --noEmit && tsc -p gui/tsconfig.browser.json --noEmit",
+    "start": "pnpm build && node gui/dist/server.js",
+    "test": "pnpm test:checks && pnpm test:gui:unit",
+    "test:checks": "uv tool run pytest tests/checks/ -v",
+    "test:gui:unit": "vitest run"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.0"
+  }
+}
