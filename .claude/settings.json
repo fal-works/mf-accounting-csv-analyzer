@@ -12,7 +12,8 @@
       "Bash(pnpm test)",
       "Bash(pnpm build *)",
       "Bash(uv run pytest *)",
-      "Bash(uv run python *)"
+      "Bash(uv run python *)",
+      "Bash(uv run python * 2>&1)"
     ]
   }
 }
