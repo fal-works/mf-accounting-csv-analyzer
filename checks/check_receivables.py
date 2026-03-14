@@ -2,7 +2,7 @@
 """売掛金・未払金の滞留チェック。
 
 使い方:
-    python check_receivables.py <仕訳帳.csv>
+    uv run python check_receivables.py <仕訳帳.csv>
 
 チェック内容:
   売掛金の計上後に入金（消込）がされているか、

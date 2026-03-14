@@ -2,7 +2,7 @@
 """勘定科目の年度間比較チェック。
 
 使い方:
-    python check_yoy.py <仕訳帳.csv> <仕訳帳.csv> ...
+    uv run python check_yoy.py <仕訳帳.csv> <仕訳帳.csv> ...
 
 チェック内容:
   勘定科目別の年間合計を年度間で比較し、大幅な増減を検出する。

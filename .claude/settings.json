@@ -4,12 +4,13 @@
       "Bash(rg *)",
       "Bash(grep *)",
       "Bash(cat *)",
+      "Bash(head *)",
+      "Bash(tail *)",
       "Bash(wc *)",
+      "Bash(ls *)",
       "Bash(pnpm typecheck *)",
-      "Bash(pnpm test*)",
+      "Bash(pnpm test)",
       "Bash(pnpm build *)",
-      "Bash(python checks/*)",
-      "Bash(uv sync*)",
       "Bash(uv run pytest*)",
       "Bash(uv run python*)"
     ]

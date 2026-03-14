@@ -2,7 +2,7 @@
 """仕訳帳の税区分チェック。
 
 使い方:
-    python check_tax.py <仕訳帳.csv>
+    uv run python check_tax.py <仕訳帳.csv>
 
 チェック内容:
   1. 税区分が既知の有効な値であるか

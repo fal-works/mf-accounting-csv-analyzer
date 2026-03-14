@@ -2,7 +2,7 @@
 """仕訳帳の重複仕訳チェック。
 
 使い方:
-    python check_duplicates.py <仕訳帳.csv>
+    uv run python check_duplicates.py <仕訳帳.csv>
 
 チェック内容:
   1. 同一日・同一科目・同一金額・同一摘要の仕訳が複数存在しないか（二重入力の検出）

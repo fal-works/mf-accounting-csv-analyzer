@@ -2,7 +2,7 @@
 """定期経費の欠落チェック。
 
 使い方:
-    python check_recurring.py <仕訳帳.csv>
+    uv run python check_recurring.py <仕訳帳.csv>
 
 チェック内容:
   過去の計上パターンから毎月発生すべき経費を推定し、

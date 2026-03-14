@@ -2,7 +2,7 @@
 """仕訳帳の売上計上漏れチェック。
 
 使い方:
-    python check_dates.py <仕訳帳.csv>
+    uv run python check_dates.py <仕訳帳.csv>
 
 チェック内容:
   1. 売上高の計上がない月がないか（入力忘れの検出）

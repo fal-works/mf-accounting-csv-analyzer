@@ -1,32 +1,44 @@
 # 分析フロー
 
-スクリプトの実行方法・構成は [README.md](README.md) を参照。
-
 ## 前提
 
 - 対象は人為的なミス（科目選択ミス、金額入力ミス、計上漏れ等）の発見
 - 会計ソフト（MoneyForward）が担保するデータの正確性（貸借一致・連番等）は疑わない
 - スクリプトの出力だけで完結せず、AIの判断と元データの確認を組み合わせる
 
-## ステップ1: ランナーで全チェック実行
+## ステップ0: 既知情報の確認
+
+分析開始前に、既知の事情やメモを確認する。
+
+- `data/memo.txt` — 複数年度にまたがる事項（共通の前提、傾向変化、科目の切り換え等）
+- `data/{年度}/memo.txt` — 特定年度の偽陽性・既知の事情
+
+## ステップ1: チェック実行
 
 ```bash
-python -m checks.runner data/*/仕訳帳.csv
+# 一括実行（推奨）
+uv run python -m checks.runner data/*/仕訳帳.csv
+
+# 選択実行・除外
+uv run python -m checks.runner data/2025/仕訳帳.csv --only check_tax,check_dates
+uv run python -m checks.runner data/*/仕訳帳.csv --skip check_yoy
+
+# 一覧表示
+uv run python -m checks.runner --list
+
+# 個別実行
+uv run python checks/check_tax.py data/2025/仕訳帳.csv
+uv run python checks/check_outliers.py data/*/仕訳帳.csv --summary
 ```
 
 全年度横断でまず傾向を掴み、詳細分析は類似した期間（直近3年など）に絞ると偽陽性が減る。
 
+スクリプトの一覧とそれぞれの目的は [checks/catalog.md](checks/catalog.md) を参照。
+
 ## ステップ2: 偽陽性の分離
 
-スクリプトの警告には偽陽性が含まれる。以下の基準でAIが判断する。
-
-| チェック | よくある偽陽性 | 要確認のケース |
-|---|---|---|
-| `check_consistency` | 支払方法の変更による貸方科目の変化 | 借方科目（費用の性質）の揺れ |
-| `check_vendor_consistency` | 摘要の表記ゆれによる比較の分断、サービス内容の違い | 同一ベンダで少数派の科目・税区分 |
-| `check_outliers` | 年次払い、複数月分一括払い、設備購入 | 同じ摘要の過去取引と桁が違う |
-| `check_yoy` | 事業規模の変化、新規サービスの開始・終了 | 既知の事業変化で説明できない変動 |
-| `check_recurring` | 契約変更・解約 | 継続中のサービスの欠落 |
+スクリプトの警告には偽陽性が含まれる。
+[checks/catalog.md](checks/catalog.md) に記載の「よくある偽陽性」も参考に、AIが要確認の警告を選別する。
 
 ## ステップ3: 個別取引の深掘り
 
@@ -35,13 +47,14 @@ python -m checks.runner data/*/仕訳帳.csv
 - 該当仕訳の**メモ欄**確認（既知の事情が記録されている場合がある）
 - 同じ摘要・取引先の過去仕訳との比較（`rg` が有効）
 - 同月の他の仕訳との関連確認（売掛金の計上と入金の対応など）
-- `data/{年度}/memo.txt` および `data/memo.txt` に既知の情報がないか確認
+- ステップ0で確認したメモに関連情報がないか再確認
 
 ## ステップ4: メモの記録
 
 - 特定年度の偽陽性・既知の事情 → `data/{年度}/memo.txt`
 - 複数年度にまたがる事項 → `data/memo.txt`
 - データを見れば分かることは記録しない。背景や意図など、データからは読み取れない情報を記録する
+- 記録時にファイルが存在しない場合は新規作成する
 - ミスが見つかった場合は会計ソフト側での修正を促す
 
 ## 機械的チェックでカバーできない観点

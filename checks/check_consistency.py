@@ -2,7 +2,7 @@
 """勘定科目と摘要の一貫性チェック。
 
 使い方:
-    python check_consistency.py <仕訳帳.csv> [<仕訳帳.csv> ...]
+    uv run python check_consistency.py <仕訳帳.csv> [<仕訳帳.csv> ...]
 
 チェック内容:
   同じ摘要に対して異なる勘定科目が使われているケースを検出する。

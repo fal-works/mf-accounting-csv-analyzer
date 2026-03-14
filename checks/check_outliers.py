@@ -2,7 +2,7 @@
 """仕訳帳の異常値（外れ値）チェック。
 
 使い方:
-    python check_outliers.py <仕訳帳.csv> [<仕訳帳.csv> ...]
+    uv run python check_outliers.py <仕訳帳.csv> [<仕訳帳.csv> ...]
 
 チェック内容:
   勘定科目ごとに金額の分布を分析し、通常と大きく異なる金額の取引を検出する。

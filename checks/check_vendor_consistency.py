@@ -2,7 +2,7 @@
 """取引先ごとの勘定科目・税区分の一貫性チェック。
 
 使い方:
-    python check_vendor_consistency.py <仕訳帳.csv> [<仕訳帳.csv> ...]
+    uv run python check_vendor_consistency.py <仕訳帳.csv> [<仕訳帳.csv> ...]
 
 チェック内容:
   同じ借方取引先に対して複数の借方勘定科目や税区分が使われているケースを検出する。

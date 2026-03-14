@@ -2,7 +2,7 @@
 """チェックスクリプトの自動検出・一括実行ランナー。
 
 使い方:
-    python -m checks.runner <仕訳帳.csv> [<仕訳帳.csv> ...]
+    uv run python -m checks.runner <仕訳帳.csv> [<仕訳帳.csv> ...]
 
 オプション:
     --only NAME[,NAME]   指定したチェックのみ実行（例: --only check_tax,check_dates）
