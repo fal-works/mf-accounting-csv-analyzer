@@ -1,6 +1,6 @@
 """check_vendor_consistency.py のテスト。"""
 
-from check_vendor_consistency import check_vendor_consistency
+from checks.check_vendor_consistency import check_vendor_consistency
 from conftest import make_simple_row
 
 

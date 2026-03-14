@@ -16,11 +16,8 @@
 import argparse
 import sys
 from collections import defaultdict
-from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-
-from common import load_journal, print_header, print_ok, print_warning
+from checks.common import load_journal, print_header, print_ok, print_warning
 
 
 def check_consistency(all_rows: list[dict]) -> int:

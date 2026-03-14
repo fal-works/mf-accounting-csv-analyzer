@@ -2,7 +2,7 @@
 
 from datetime import date
 
-from common import SKIP_ACCOUNTS_COMMON, month_key, parse_amount, parse_date
+from checks.common import SKIP_ACCOUNTS_COMMON, month_key, parse_amount, parse_date
 
 
 class TestParseDate:

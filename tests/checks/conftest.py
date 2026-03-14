@@ -1,11 +1,5 @@
 """checks/ テスト共通のフィクスチャとヘルパー。"""
 
-import sys
-from pathlib import Path
-
-# checks/ モジュールを import 可能にする
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "checks"))
-
 # 仕訳帳CSVの全カラム
 _JOURNAL_COLUMNS = [
     "取引No", "取引日",

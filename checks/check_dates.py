@@ -10,11 +10,8 @@
 
 import argparse
 import sys
-from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-
-from common import load_journal, month_key, parse_date, print_header, print_ok, print_warning
+from checks.common import load_journal, month_key, parse_date, print_header, print_ok, print_warning
 
 
 def check_monthly_sales(rows: list[dict]) -> int:

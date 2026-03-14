@@ -16,11 +16,8 @@
 import argparse
 import sys
 from collections import defaultdict
-from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-
-from common import SKIP_ACCOUNTS_COMMON, load_journal, parse_amount, print_header, print_ok, print_warning
+from checks.common import SKIP_ACCOUNTS_COMMON, load_journal, parse_amount, print_header, print_ok, print_warning
 
 # 外れ値とみなす中央値からの乖離倍率（中央値の N 倍以上）
 OUTLIER_THRESHOLD = 5.0

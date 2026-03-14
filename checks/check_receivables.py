@@ -23,11 +23,8 @@
 import argparse
 import sys
 from collections import defaultdict
-from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-
-from common import load_journal, month_key, parse_amount, parse_date, print_header, print_ok, print_warning
+from checks.common import load_journal, month_key, parse_amount, parse_date, print_header, print_ok, print_warning
 
 
 def check_receivables(rows: list[dict]) -> int:

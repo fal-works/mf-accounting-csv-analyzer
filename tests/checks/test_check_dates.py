@@ -1,6 +1,6 @@
 """check_dates.py のテスト。"""
 
-from check_dates import check_monthly_sales
+from checks.check_dates import check_monthly_sales
 from conftest import make_simple_row
 
 

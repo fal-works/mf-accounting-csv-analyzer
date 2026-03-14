@@ -1,6 +1,6 @@
 """check_receivables.py のテスト。"""
 
-from check_receivables import check_receivables
+from checks.check_receivables import check_receivables
 from conftest import make_simple_row
 
 

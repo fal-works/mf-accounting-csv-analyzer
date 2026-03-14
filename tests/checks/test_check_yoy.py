@@ -1,6 +1,6 @@
 """check_yoy.py のテスト。"""
 
-from check_yoy import check_yoy
+from checks.check_yoy import check_yoy
 from conftest import make_simple_row
 
 

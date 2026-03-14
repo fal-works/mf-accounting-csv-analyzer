@@ -18,11 +18,8 @@
 import argparse
 import sys
 from collections import defaultdict
-from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-
-from common import SKIP_ACCOUNTS_COMMON, load_journal, month_key, parse_date, print_header, print_ok, print_warning
+from checks.common import SKIP_ACCOUNTS_COMMON, load_journal, month_key, parse_date, print_header, print_ok, print_warning
 
 # 年間でこの月数以上計上されていれば「定期経費」とみなす
 MONTHLY_THRESHOLD = 10
