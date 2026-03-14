@@ -6,8 +6,8 @@
 
 export interface CsvTypeDef {
   saveName: string;
-  /** Columns unique to this type — all must be present in the header */
-  identifyColumns: string[];
+  /** Formal columns expected for this CSV type */
+  columns: string[];
   /** Column that contains dates in YYYY/MM/DD format */
   dateColumn: string;
 }
@@ -15,11 +15,21 @@ export interface CsvTypeDef {
 export const CSV_TYPES: CsvTypeDef[] = [
   {
     saveName: "仕訳帳.csv",
-    identifyColumns: [
+    columns: [
+      "取引No",
+      "取引日",
       "借方勘定科目",
-      "貸方勘定科目",
+      "借方補助科目",
+      "借方取引先",
+      "借方税区分",
       "借方金額(円)",
+      "貸方勘定科目",
+      "貸方補助科目",
+      "貸方取引先",
+      "貸方税区分",
       "貸方金額(円)",
+      "摘要",
+      "メモ",
     ],
     dateColumn: "取引日",
   },
@@ -58,16 +68,10 @@ export function isUTF8(bytes: Uint8Array): boolean {
 export function identifyType(header: string[], fileName: string): CsvTypeDef | null {
   const headerSet = new Set(header.map((h) => h.trim()));
 
-  let best: CsvTypeDef | null = null;
-  let bestScore = 0;
   for (const t of CSV_TYPES) {
-    const score = t.identifyColumns.filter((c) => headerSet.has(c)).length;
-    if (score === t.identifyColumns.length && score > bestScore) {
-      best = t;
-      bestScore = score;
-    }
+    const matchesAllColumns = t.columns.every((column) => headerSet.has(column));
+    if (matchesAllColumns) return t;
   }
-  if (best) return best;
 
   // Fallback: match by filename
   for (const t of CSV_TYPES) {
@@ -75,6 +79,14 @@ export function identifyType(header: string[], fileName: string): CsvTypeDef | n
     if (fileName.includes(base)) return t;
   }
   return null;
+}
+
+export function findMissingRequiredColumns(
+  header: string[],
+  columns: string[],
+): string[] {
+  const headerSet = new Set(header.map((h) => h.trim()));
+  return columns.filter((column) => !headerSet.has(column));
 }
 
 // ---------------------------------------------------------------------------

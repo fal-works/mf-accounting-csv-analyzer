@@ -4,6 +4,7 @@ import {
   isUTF8,
   uint8ToBase64,
   identifyType,
+  findMissingRequiredColumns,
   extractYear,
   parseCSVRow,
   splitCSVLines,
@@ -22,7 +23,7 @@ const logEl = document.getElementById("log") as HTMLDivElement;
   const tbody = document.getElementById("type-defs-body") as HTMLTableSectionElement;
   for (const t of CSV_TYPES) {
     const tr = document.createElement("tr");
-    tr.innerHTML = `<td>${esc(t.saveName)}</td><td>${esc(t.identifyColumns.join(", "))}</td>`;
+    tr.innerHTML = `<td>${esc(t.saveName)}</td><td>${esc(t.columns.join(", "))}</td>`;
     tbody.appendChild(tr);
   }
 }
@@ -95,6 +96,12 @@ async function processFile(file: File): Promise<void> {
     return;
   }
   log("info", `タイプ: ${csvType.saveName}`);
+
+  const missingColumns = findMissingRequiredColumns(header, csvType.columns);
+  if (missingColumns.length > 0) {
+    log("err", `必須カラムが不足しています: ${missingColumns.join(", ")}\n`);
+    return;
+  }
 
   // 5. Extract year from dates
   const year = extractYear(lines, header, csvType.dateColumn);

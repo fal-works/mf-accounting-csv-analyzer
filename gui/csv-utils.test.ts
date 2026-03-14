@@ -3,6 +3,7 @@ import {
   parseCSVRow,
   splitCSVLines,
   identifyType,
+  findMissingRequiredColumns,
   extractYear,
   esc,
   isUTF8,
@@ -90,19 +91,16 @@ describe("splitCSVLines", () => {
 // identifyType
 // ---------------------------------------------------------------------------
 describe("identifyType", () => {
-  test("identifies 仕訳帳 by header columns", () => {
-    const header = [
-      "取引No",
-      "取引日",
-      "借方勘定科目",
-      "貸方勘定科目",
-      "借方金額(円)",
-      "貸方金額(円)",
-      "摘要",
-    ];
+  test("identifies 仕訳帳 when all formal columns are present", () => {
+    const header = CSV_TYPES[0].columns;
     const result = identifyType(header, "export.csv");
     expect(result).not.toBeNull();
     expect(result!.saveName).toBe("仕訳帳.csv");
+  });
+
+  test("returns null when formal columns are missing even if filename matches", () => {
+    const header = CSV_TYPES[0].columns.filter((column) => column !== "メモ");
+    expect(identifyType(header, "export.csv")).toBeNull();
   });
 
   test("falls back to filename matching", () => {
@@ -117,10 +115,37 @@ describe("identifyType", () => {
   });
 
   test("trims header values for matching", () => {
-    const header = [" 借方勘定科目 ", " 貸方勘定科目 ", " 借方金額(円) ", " 貸方金額(円) "];
+    const header = CSV_TYPES[0].columns.map((column) => ` ${column} `);
     const result = identifyType(header, "x.csv");
     expect(result).not.toBeNull();
     expect(result!.saveName).toBe("仕訳帳.csv");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// findMissingRequiredColumns
+// ---------------------------------------------------------------------------
+describe("findMissingRequiredColumns", () => {
+  test("returns no missing columns when all required columns exist", () => {
+    const columns = CSV_TYPES[0].columns;
+    expect(findMissingRequiredColumns(columns, columns)).toEqual([]);
+  });
+
+  test("returns missing columns in definition order", () => {
+    const columns = CSV_TYPES[0].columns;
+    const header = columns.filter(
+      (column) => column !== "借方補助科目" && column !== "メモ",
+    );
+    expect(findMissingRequiredColumns(header, columns)).toEqual([
+      "借方補助科目",
+      "メモ",
+    ]);
+  });
+
+  test("trims header values before checking required columns", () => {
+    const columns = CSV_TYPES[0].columns;
+    const header = columns.map((column) => ` ${column} `);
+    expect(findMissingRequiredColumns(header, columns)).toEqual([]);
   });
 });
 
