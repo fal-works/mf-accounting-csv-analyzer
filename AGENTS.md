@@ -13,7 +13,7 @@
 
 ### 基本フロー
 
-1. `data/memo.txt` および `data/{年度}/memo.txt` で既知情報を確認
+1. `data/memo.md` および `data/{年度}/memo.md` で既知情報を確認
 2. `uv run python -m checks.runner data/*/仕訳帳.csv` で全チェック実行
 3. 警告を偽陽性と要確認に分類
 4. 要確認の取引を `rg` で元データと照合
