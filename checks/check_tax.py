@@ -14,7 +14,16 @@
 import argparse
 import sys
 
-from checks.common import CheckResult, DataFileError, load_journal, print_error, print_header, print_ok, print_warning
+from checks.common import (
+    SKIP_ACCOUNTS_COMMON,
+    CheckResult,
+    DataFileError,
+    load_journal,
+    print_error,
+    print_header,
+    print_ok,
+    print_warning,
+)
 from checks.journal_columns import SIDES, TX_DATE, TX_NO
 
 MULTI_YEAR = False
@@ -33,11 +42,6 @@ SALES_TAX = {"課税売上 10% 五種"}
 
 # 仕入系の税区分
 PURCHASE_TAX = {"課税仕入 10%", "対象外仕入"}
-
-# 常に対象外であるべき勘定科目
-NON_TAXABLE_ACCOUNTS = {
-    "事業主貸", "事業主借", "元入金", "現金", "普通預金", "売掛金", "未払金", "機械装置",
-}
 
 # 売上科目
 SALES_ACCOUNTS = {"売上高"}
@@ -76,7 +80,7 @@ def check_tax_categories(rows: list[dict]) -> CheckResult:
             if not account or not tax:
                 continue
 
-            if account in NON_TAXABLE_ACCOUNTS and tax not in {"対象外", ""}:
+            if account in SKIP_ACCOUNTS_COMMON and tax not in {"対象外", ""}:
                 print_error(f"{tx_info}: {side.label}「{account}」に税区分「{tax}」は不適切")
                 mismatch_count += 1
 
@@ -84,7 +88,7 @@ def check_tax_categories(rows: list[dict]) -> CheckResult:
                 print_error(f"{tx_info}: {side.label}「{account}」に仕入系税区分「{tax}」")
                 mismatch_count += 1
 
-            if account not in SALES_ACCOUNTS and account not in NON_TAXABLE_ACCOUNTS and tax in SALES_TAX:
+            if account not in SALES_ACCOUNTS and account not in SKIP_ACCOUNTS_COMMON and tax in SALES_TAX:
                 print_error(f"{tx_info}: {side.label}「{account}」に売上系税区分「{tax}」")
                 mismatch_count += 1
 

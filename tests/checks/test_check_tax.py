@@ -42,6 +42,19 @@ class TestCheckTax:
         warnings = check_tax_categories(rows)
         assert warnings.warnings > 0
 
+    def test_skip_account_common_with_tax(self, capsys):
+        """共通スキップ科目は check_tax でも非課税扱いにする。"""
+        rows = [
+            make_simple_row(
+                "1", "2025/01/15", "工具器具備品", "普通預金", "5000",
+                debit_tax="課税仕入 10%", credit_tax="対象外",
+            ),
+        ]
+        warnings = check_tax_categories(rows)
+        assert warnings.warnings > 0
+        out = capsys.readouterr().out
+        assert "工具器具備品" in out
+
     def test_unlisted_expense_account_with_sales_tax(self, capsys):
         """明示列挙されていない経費科目でも売上系税区分を検出する。"""
         rows = [
