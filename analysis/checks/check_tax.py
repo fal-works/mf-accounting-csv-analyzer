@@ -20,7 +20,7 @@ from analysis.common import (
     print_warning,
     run_check_cli,
 )
-from analysis.journal_columns import SIDES, TX_DATE, TX_NO
+from analysis.journal_columns import SIDES, SUMMARY, TX_DATE, TX_NO
 
 MULTI_YEAR = False
 
@@ -42,6 +42,13 @@ PURCHASE_TAX = {"課税仕入 10%", "対象外仕入"}
 # 売上科目
 SALES_ACCOUNTS = {"売上高"}
 
+
+def _print_summary_context(row: dict[str, str]) -> None:
+    """警告判定に役立つ摘要を補足表示する。"""
+    summary = row[SUMMARY].strip()
+    if summary:
+        print(f"  摘要: {summary}")
+
 def check_tax_categories(rows: list[dict]) -> CheckResult:
     """税区分の妥当性をチェックする。"""
     warnings = 0
@@ -57,6 +64,7 @@ def check_tax_categories(rows: list[dict]) -> CheckResult:
                     f"取引No {row[TX_NO]} ({row[TX_DATE]}): "
                     f"{side.label}に未知の税区分「{val}」"
                 )
+                _print_summary_context(row)
                 invalid_count += 1
 
     if invalid_count == 0:
@@ -78,14 +86,17 @@ def check_tax_categories(rows: list[dict]) -> CheckResult:
 
             if account in SKIP_ACCOUNTS_COMMON and tax not in {"対象外", ""}:
                 print_error(f"{tx_info}: {side.label}「{account}」に税区分「{tax}」は不適切")
+                _print_summary_context(row)
                 mismatch_count += 1
 
             if account in SALES_ACCOUNTS and tax in PURCHASE_TAX:
                 print_error(f"{tx_info}: {side.label}「{account}」に仕入系税区分「{tax}」")
+                _print_summary_context(row)
                 mismatch_count += 1
 
             if account not in SALES_ACCOUNTS and account not in SKIP_ACCOUNTS_COMMON and tax in SALES_TAX:
                 print_error(f"{tx_info}: {side.label}「{account}」に売上系税区分「{tax}」")
+                _print_summary_context(row)
                 mismatch_count += 1
 
     if mismatch_count == 0:

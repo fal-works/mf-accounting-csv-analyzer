@@ -12,6 +12,7 @@ from analysis.journal_columns import (
     DEBIT_TAX,
     DEBIT_VENDOR,
     JOURNAL_COLUMNS,
+    MEMO,
     SUMMARY,
     TX_DATE,
     TX_NO,
@@ -39,6 +40,7 @@ def make_simple_row(
     credit_sub: str = "",
     debit_vendor: str = "",
     credit_vendor: str = "",
+    memo: str = "",
 ) -> dict[str, str]:
     """よく使うパターンの仕訳行を簡潔に生成する。"""
     return make_row(
@@ -56,5 +58,6 @@ def make_simple_row(
             CREDIT_TAX: credit_tax,
             CREDIT_AMOUNT: amount,
             SUMMARY: summary,
+            MEMO: memo,
         }
     )

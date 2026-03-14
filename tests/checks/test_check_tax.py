@@ -23,13 +23,26 @@ class TestCheckTax:
         rows = [
             make_simple_row(
                 "1", "2025/01/15", "通信費", "普通預金", "5000",
-                debit_tax="不明な区分", credit_tax="対象外",
+                debit_tax="不明な区分", credit_tax="対象外", summary="NTT東日本 光回線利用料",
             ),
         ]
         warnings = check_tax_categories(rows)
         assert warnings.warnings > 0
         out = capsys.readouterr().out
         assert "不明な区分" in out
+        assert "摘要: NTT東日本 光回線利用料" in out
+
+    def test_invalid_tax_category_without_summary_skips_context(self, capsys):
+        rows = [
+            make_simple_row(
+                "1", "2025/01/15", "通信費", "普通預金", "5000",
+                debit_tax="不明な区分", credit_tax="対象外",
+            ),
+        ]
+        warnings = check_tax_categories(rows)
+        assert warnings.warnings > 0
+        out = capsys.readouterr().out
+        assert "摘要:" not in out
 
     def test_non_taxable_account_with_tax(self, capsys):
         """非課税科目に課税区分が付いていればエラー。"""
@@ -68,3 +81,15 @@ class TestCheckTax:
         out = capsys.readouterr().out
         assert "旅費交通費" in out
         assert "課税売上 10% 五種" in out
+
+    def test_account_tax_mismatch_prints_summary_context(self, capsys):
+        rows = [
+            make_simple_row(
+                "1", "2025/01/15", "旅費交通費", "普通預金", "5000",
+                debit_tax="課税売上 10% 五種", credit_tax="対象外", summary="出張時の新幹線",
+            ),
+        ]
+        warnings = check_tax_categories(rows)
+        assert warnings.warnings > 0
+        out = capsys.readouterr().out
+        assert "摘要: 出張時の新幹線" in out
