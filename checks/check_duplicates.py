@@ -12,10 +12,12 @@ import argparse
 import sys
 from collections import defaultdict
 
-from checks.common import load_journal, print_header, print_ok, print_warning
+from checks.common import CheckResult, DataFileError, load_journal, print_header, print_ok, print_warning
+
+MULTI_YEAR = False
 
 
-def check_duplicate_entries(rows: list[dict]) -> int:
+def check_duplicate_entries(rows: list[dict]) -> CheckResult:
     """同一内容の仕訳が重複していないかチェックする。"""
     print_header("重複仕訳チェック")
 
@@ -57,7 +59,7 @@ def check_duplicate_entries(rows: list[dict]) -> int:
     if warnings == 0:
         print_ok("重複なし")
 
-    return warnings
+    return CheckResult(warnings)
 
 
 def main() -> None:
@@ -65,10 +67,15 @@ def main() -> None:
     parser.add_argument("journal", help="仕訳帳CSVファイルのパス")
     args = parser.parse_args()
 
-    journal = load_journal(args.journal)
-    warnings = check_duplicate_entries(journal)
+    try:
+        journal = load_journal(args.journal)
+    except DataFileError as e:
+        print(f"エラー: {e}", file=sys.stderr)
+        sys.exit(1)
 
-    if warnings > 0:
+    result = check_duplicate_entries(journal)
+
+    if result.warnings > 0:
         sys.exit(1)
 
 

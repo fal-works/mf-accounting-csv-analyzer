@@ -6,55 +6,101 @@
 - 会計ソフト（MoneyForward）が担保するデータの正確性（貸借一致・連番等）は疑わない。
 - スクリプトはAIが対話的に分析する際の手段であり、スクリプトの出力だけで完結するものではない。
 
-## スクリプト一覧
+## 一括実行（ランナー）
 
-| スクリプト | 入力 | 目的 |
-|---|---|---|
-| `check_tax.py` | 仕訳帳 1ファイル | 税区分の有効値・科目との整合性を検証 |
-| `check_duplicates.py` | 仕訳帳 1ファイル | 同一内容の二重入力を検出 |
-| `check_dates.py` | 仕訳帳 1ファイル | 売上高の月次計上漏れを検出 |
-| `check_consistency.py` | 仕訳帳 複数可 | 同じ摘要に異なる科目が使われている揺れを検出 |
-| `check_vendor_consistency.py` | 仕訳帳 複数可 | 同じ取引先に異なる科目・税区分が使われている揺れを検出 |
-| `check_outliers.py` | 仕訳帳 複数可 | 科目ごとの金額の外れ値（桁間違い等）を検出 |
-| `check_yoy.py` | 仕訳帳 複数必須 | 年度間の科目別合計の大幅変動を検出 |
-| `check_recurring.py` | 仕訳帳 1ファイル | 毎月発生すべき経費の欠落月を検出 |
-| `check_receivables.py` | 仕訳帳 1ファイル | 売掛金・未払金の消込状況と滞留を確認 |
-
-### 使い方の例
+全チェックをまとめて実行するランナーが用意されている。通常はこちらを使う。
 
 ```bash
-# 単一年度の基本チェック
-python checks/check_tax.py data/2025/仕訳帳.csv
-python checks/check_duplicates.py data/2025/仕訳帳.csv
-python checks/check_dates.py data/2025/仕訳帳.csv
-python checks/check_recurring.py data/2025/仕訳帳.csv
-python checks/check_receivables.py data/2025/仕訳帳.csv
+# 全チェック実行
+python -m checks.runner data/*/仕訳帳.csv
 
-# 複数年度を横断した分析
-python checks/check_consistency.py data/*/仕訳帳.csv
-python checks/check_vendor_consistency.py data/*/仕訳帳.csv
-python checks/check_outliers.py data/*/仕訳帳.csv --summary
-python checks/check_yoy.py data/*/仕訳帳.csv
+# 特定のチェックのみ実行
+python -m checks.runner data/2025/仕訳帳.csv --only check_tax,check_dates
+
+# 特定のチェックを除外
+python -m checks.runner data/*/仕訳帳.csv --skip check_yoy
+
+# 利用可能なチェック一覧
+python -m checks.runner --list
 ```
+
+ランナーは実行結果をサマリー表示する。各チェックの状態は OK / WARN / SKIP のいずれか。
+
+## スクリプト一覧
+
+| スクリプト | 年度 | 目的 |
+|---|---|---|
+| `check_tax.py` | 単年度 | 税区分の有効値・科目との整合性を検証 |
+| `check_duplicates.py` | 単年度 | 同一内容の二重入力を検出 |
+| `check_dates.py` | 単年度 | 売上高の月次計上漏れを検出 |
+| `check_recurring.py` | 単年度 | 毎月発生すべき経費の欠落月を検出 |
+| `check_receivables.py` | 単年度 | 売掛金・未払金の消込状況と滞留を確認 |
+| `check_consistency.py` | 複数可 | 同じ摘要に異なる科目が使われている揺れを検出 |
+| `check_vendor_consistency.py` | 複数可 | 同じ取引先に異なる科目・税区分が使われている揺れを検出 |
+| `check_outliers.py` | 複数可 | 科目ごとの金額の外れ値（桁間違い等）を検出 |
+| `check_yoy.py` | 複数必須 | 年度間の科目別合計の大幅変動を検出 |
+
+### 個別実行
+
+ランナーを使わず個別に実行することもできる。
+
+```bash
+# 単年度チェック
+python checks/check_tax.py data/2025/仕訳帳.csv
+
+# 複数年度チェック
+python checks/check_outliers.py data/*/仕訳帳.csv --summary
+```
+
+## アーキテクチャ
+
+### 戻り値: `CheckResult`
+
+全チェック関数は `CheckResult`（NamedTuple）を返す。
+
+| フィールド | 型 | 説明 |
+|---|---|---|
+| `warnings` | `int` | 検出された警告の件数 |
+| `skipped` | `bool` | データ不足等でチェックがスキップされたか |
+| `reason` | `str` | スキップ理由（skipped=True の場合） |
+
+これにより「0件 = 問題なし」と「データ不足でチェック不能」を区別できる。
+
+### モジュールメタデータ
+
+各 `check_*.py` はモジュールレベルで以下の属性を持つ。
+
+| 属性 | 型 | デフォルト | 説明 |
+|---|---|---|---|
+| `MULTI_YEAR` | `bool` | `False` | 複数年度データを前提とするか |
+| `ENABLED` | `bool` | `True` | `False` にするとランナーの自動検出から除外 |
+
+### エラー処理
+
+- `common.read_csv()` はファイル不在時に `DataFileError` 例外を送出する。
+- CLI エントリポイント（`main()`）でのみ例外を捕捉して `sys.exit(1)` する。
+- ランナーやプログラムから呼ぶ場合は例外を自由にハンドリングできる。
+
+### 新しいチェックの追加方法
+
+1. `checks/check_<name>.py` を作成する
+2. `MULTI_YEAR = True` or `False` をモジュールレベルで定義する
+3. `check_<name>(rows) -> CheckResult` を実装する
+4. `tests/checks/test_check_<name>.py` にテストを書く
+5. ランナーが自動検出するため、登録作業は不要
+
+開発中のスクリプトは `ENABLED = False` を設定しておけば、ランナーの一括実行に含まれない。
+`check_` プレフィックスを付けないファイル名にすることでも自動検出を回避できる。
 
 ## 分析フロー
 
-### ステップ1: 機械的チェック（スクリプト実行）
+### ステップ1: 機械的チェック（ランナー実行）
 
-対象年度の仕訳帳に対して全スクリプトを実行し、警告を収集する。
+対象年度の仕訳帳に対してランナーで全チェックを実行し、警告を収集する。
 
-**単年度チェック** — 対象年度の基本的な整合性:
-- `check_tax.py` → 税区分の誤り
-- `check_duplicates.py` → 二重入力
-- `check_dates.py` → 売上の月次漏れ
-- `check_recurring.py` → 定期経費の欠落
-- `check_receivables.py` → 売掛金・未払金の消込状況
-
-**複数年度チェック** — 過去データとの比較による異常検出:
-- `check_consistency.py` → 摘要と科目の対応の揺れ
-- `check_vendor_consistency.py` → 取引先と科目・税区分の対応の揺れ
-- `check_outliers.py` → 金額の外れ値
-- `check_yoy.py` → 年度間の科目別合計の変動
+```bash
+python -m checks.runner data/*/仕訳帳.csv
+```
 
 **期間の選び方**: 事業規模や取引構造が大きく変わった年度を含めると偽陽性が増える。
 全年度横断（`data/*/仕訳帳.csv`）でまず傾向を掴み、詳細分析は類似した期間（例: 直近3年）に絞るとよい。

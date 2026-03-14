@@ -16,7 +16,7 @@ class TestCheckReceivables:
         assert "100,000" in out
         # 差額0 → 繰越の表示なし
         assert "繰り越" not in out
-        assert result == 0
+        assert result.warnings == 0
 
     def test_outstanding_balance(self, capsys):
         """消込が不足していれば繰越残高表示。"""
@@ -28,7 +28,7 @@ class TestCheckReceivables:
         result = check_receivables(rows)
         out = capsys.readouterr().out
         assert "翌年繰越" in out
-        assert result == 0
+        assert result.warnings == 0
 
     def test_no_transactions(self, capsys):
         """売掛金・未払金の取引がなければ OK。"""
@@ -38,4 +38,4 @@ class TestCheckReceivables:
         result = check_receivables(rows)
         out = capsys.readouterr().out
         assert "OK" in out
-        assert result == 0
+        assert result.warnings == 0

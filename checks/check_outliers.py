@@ -17,7 +17,9 @@ import argparse
 import sys
 from collections import defaultdict
 
-from checks.common import SKIP_ACCOUNTS_COMMON, load_journal, parse_amount, print_header, print_ok, print_warning
+from checks.common import SKIP_ACCOUNTS_COMMON, CheckResult, DataFileError, load_journal, parse_amount, print_header, print_ok, print_warning
+
+MULTI_YEAR = True
 
 # 外れ値とみなす中央値からの乖離倍率（中央値の N 倍以上）
 OUTLIER_THRESHOLD = 5.0
@@ -39,7 +41,7 @@ def median(values: list[int]) -> float:
     return (s[n // 2 - 1] + s[n // 2]) / 2
 
 
-def check_outliers(all_rows: list[dict]) -> int:
+def check_outliers(all_rows: list[dict]) -> CheckResult:
     """勘定科目ごとの金額の外れ値を検出する。"""
     print_header("金額の異常値チェック")
 
@@ -88,7 +90,7 @@ def check_outliers(all_rows: list[dict]) -> int:
     if warnings == 0:
         print_ok("異常値なし")
 
-    return warnings
+    return CheckResult(warnings)
 
 
 def print_summary(all_rows: list[dict]) -> None:
@@ -127,16 +129,20 @@ def main() -> None:
     parser.add_argument("--summary", action="store_true", help="科目別サマリーも表示")
     args = parser.parse_args()
 
-    all_rows: list[dict] = []
-    for path in args.journals:
-        all_rows.extend(load_journal(path))
+    try:
+        all_rows: list[dict] = []
+        for path in args.journals:
+            all_rows.extend(load_journal(path))
+    except DataFileError as e:
+        print(f"エラー: {e}", file=sys.stderr)
+        sys.exit(1)
 
-    warnings = check_outliers(all_rows)
+    result = check_outliers(all_rows)
 
     if args.summary:
         print_summary(all_rows)
 
-    if warnings > 0:
+    if result.warnings > 0:
         sys.exit(1)
 
 

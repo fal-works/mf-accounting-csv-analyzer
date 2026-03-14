@@ -13,7 +13,7 @@ class TestCheckConsistency:
         result = check_consistency(rows)
         out = capsys.readouterr().out
         assert "OK" in out
-        assert result == 0
+        assert result.warnings == 0
 
     def test_inconsistent(self, capsys):
         """同じ摘要に異なる科目が使われていれば警告。"""
@@ -27,4 +27,4 @@ class TestCheckConsistency:
         out = capsys.readouterr().out
         assert "WARN" in out
         assert "電話代" in out
-        assert result > 0
+        assert result.warnings > 0

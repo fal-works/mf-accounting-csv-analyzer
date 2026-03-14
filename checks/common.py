@@ -1,17 +1,27 @@
 """仕訳帳CSVの共通読み込みユーティリティ。"""
 
 import csv
-import sys
 from datetime import date, datetime
 from pathlib import Path
+from typing import NamedTuple
+
+
+class CheckResult(NamedTuple):
+    """チェック関数の戻り値。"""
+    warnings: int
+    skipped: bool = False
+    reason: str = ""
+
+
+class DataFileError(Exception):
+    """データファイルの読み込みエラー。"""
 
 
 def read_csv(path: str | Path) -> list[dict[str, str]]:
     """UTF-8のCSVファイルを読み込み、辞書のリストとして返す。"""
     path = Path(path)
     if not path.exists():
-        print(f"エラー: ファイルが見つかりません: {path}", file=sys.stderr)
-        sys.exit(1)
+        raise DataFileError(f"ファイルが見つかりません: {path}")
     with open(path, encoding="utf-8", newline="") as f:
         reader = csv.DictReader(f)
         return list(reader)

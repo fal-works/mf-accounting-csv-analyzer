@@ -24,10 +24,12 @@ import argparse
 import sys
 from collections import defaultdict
 
-from checks.common import load_journal, month_key, parse_amount, parse_date, print_header, print_ok, print_warning
+from checks.common import CheckResult, DataFileError, load_journal, month_key, parse_amount, parse_date, print_header, print_ok, print_warning
+
+MULTI_YEAR = False
 
 
-def check_receivables(rows: list[dict]) -> int:
+def check_receivables(rows: list[dict]) -> CheckResult:
     """売掛金・未払金の消込状況をチェックする。"""
 
     targets = {
@@ -92,7 +94,7 @@ def check_receivables(rows: list[dict]) -> int:
         elif balance > 0:
             print(f"年末残高{balance:,}円→翌年繰越")
 
-    return warnings
+    return CheckResult(warnings)
 
 
 def main() -> None:
@@ -100,10 +102,15 @@ def main() -> None:
     parser.add_argument("journal", help="仕訳帳CSVファイルのパス")
     args = parser.parse_args()
 
-    journal = load_journal(args.journal)
-    warnings = check_receivables(journal)
+    try:
+        journal = load_journal(args.journal)
+    except DataFileError as e:
+        print(f"エラー: {e}", file=sys.stderr)
+        sys.exit(1)
 
-    if warnings > 0:
+    result = check_receivables(journal)
+
+    if result.warnings > 0:
         sys.exit(1)
 
 

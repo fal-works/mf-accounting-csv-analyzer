@@ -19,7 +19,7 @@ class TestCheckVendorConsistency:
         result = check_vendor_consistency(rows)
         out = capsys.readouterr().out
         assert "OK" in out
-        assert result == 0
+        assert result.warnings == 0
 
     def test_inconsistent(self, capsys):
         rows = [
@@ -44,4 +44,4 @@ class TestCheckVendorConsistency:
         out = capsys.readouterr().out
         assert "WARN" in out
         assert "NTT" in out
-        assert result > 0
+        assert result.warnings > 0

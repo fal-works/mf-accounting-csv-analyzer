@@ -14,7 +14,9 @@
 import argparse
 import sys
 
-from checks.common import load_journal, print_error, print_header, print_ok, print_warning
+from checks.common import CheckResult, DataFileError, load_journal, print_error, print_header, print_ok, print_warning
+
+MULTI_YEAR = False
 
 # 有効な税区分
 VALID_TAX_CATEGORIES = {
@@ -46,7 +48,7 @@ EXPENSE_ACCOUNTS = {
 }
 
 
-def check_tax_categories(rows: list[dict]) -> int:
+def check_tax_categories(rows: list[dict]) -> CheckResult:
     """税区分の妥当性をチェックする。"""
     warnings = 0
 
@@ -113,7 +115,7 @@ def check_tax_categories(rows: list[dict]) -> int:
         print_ok("科目×税区分の整合OK")
     warnings += mismatch_count
 
-    return warnings
+    return CheckResult(warnings)
 
 
 def main() -> None:
@@ -121,10 +123,15 @@ def main() -> None:
     parser.add_argument("journal", help="仕訳帳CSVファイルのパス")
     args = parser.parse_args()
 
-    journal = load_journal(args.journal)
-    warnings = check_tax_categories(journal)
+    try:
+        journal = load_journal(args.journal)
+    except DataFileError as e:
+        print(f"エラー: {e}", file=sys.stderr)
+        sys.exit(1)
 
-    if warnings > 0:
+    result = check_tax_categories(journal)
+
+    if result.warnings > 0:
         sys.exit(1)
 
 

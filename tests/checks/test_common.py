@@ -2,7 +2,9 @@
 
 from datetime import date
 
-from checks.common import SKIP_ACCOUNTS_COMMON, month_key, parse_amount, parse_date
+import pytest
+
+from checks.common import SKIP_ACCOUNTS_COMMON, CheckResult, DataFileError, month_key, parse_amount, parse_date, read_csv
 
 
 class TestParseDate:
@@ -51,3 +53,23 @@ class TestSkipAccountsCommon:
     def test_contains_expected(self):
         for name in ["事業主貸", "事業主借", "元入金", "現金", "普通預金"]:
             assert name in SKIP_ACCOUNTS_COMMON
+
+
+class TestCheckResult:
+    def test_defaults(self):
+        r = CheckResult(3)
+        assert r.warnings == 3
+        assert r.skipped is False
+        assert r.reason == ""
+
+    def test_skipped(self):
+        r = CheckResult(0, skipped=True, reason="データ不足")
+        assert r.warnings == 0
+        assert r.skipped is True
+        assert r.reason == "データ不足"
+
+
+class TestDataFileError:
+    def test_raises_on_missing_file(self):
+        with pytest.raises(DataFileError):
+            read_csv("/tmp/nonexistent_file_for_test.csv")

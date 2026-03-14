@@ -16,10 +16,12 @@ import argparse
 import sys
 from collections import defaultdict
 
-from checks.common import SKIP_ACCOUNTS_COMMON, load_journal, print_header, print_ok, print_warning
+from checks.common import SKIP_ACCOUNTS_COMMON, CheckResult, DataFileError, load_journal, print_header, print_ok, print_warning
+
+MULTI_YEAR = True
 
 
-def check_vendor_consistency(all_rows: list[dict]) -> int:
+def check_vendor_consistency(all_rows: list[dict]) -> CheckResult:
     """借方取引先ごとの科目・税区分の一貫性をチェックする。"""
     print_header("取引先×勘定科目 一貫性チェック")
 
@@ -70,7 +72,7 @@ def check_vendor_consistency(all_rows: list[dict]) -> int:
     if warnings == 0:
         print_ok("取引先×科目の揺れなし")
 
-    return warnings
+    return CheckResult(warnings)
 
 
 def main() -> None:
@@ -78,13 +80,17 @@ def main() -> None:
     parser.add_argument("journals", nargs="+", help="仕訳帳CSVファイルのパス（複数可）")
     args = parser.parse_args()
 
-    all_rows: list[dict] = []
-    for path in args.journals:
-        all_rows.extend(load_journal(path))
+    try:
+        all_rows: list[dict] = []
+        for path in args.journals:
+            all_rows.extend(load_journal(path))
+    except DataFileError as e:
+        print(f"エラー: {e}", file=sys.stderr)
+        sys.exit(1)
 
-    warnings = check_vendor_consistency(all_rows)
+    result = check_vendor_consistency(all_rows)
 
-    if warnings > 0:
+    if result.warnings > 0:
         sys.exit(1)
 
 

@@ -11,10 +11,12 @@
 import argparse
 import sys
 
-from checks.common import load_journal, month_key, parse_date, print_header, print_ok, print_warning
+from checks.common import CheckResult, DataFileError, load_journal, month_key, parse_date, print_header, print_ok, print_warning
+
+MULTI_YEAR = False
 
 
-def check_monthly_sales(rows: list[dict]) -> int:
+def check_monthly_sales(rows: list[dict]) -> CheckResult:
     """月次の売上計上チェック。売上高がない月を警告する。"""
     print_header("月次売上計上チェック")
 
@@ -40,10 +42,10 @@ def check_monthly_sales(rows: list[dict]) -> int:
     missing = sorted(expected_months - months_with_sales)
     if missing:
         print_warning(f"売上高の計上なし: {', '.join(missing)}")
-        return 1
+        return CheckResult(1)
     else:
         print_ok("毎月売上計上あり")
-        return 0
+        return CheckResult(0)
 
 
 def main() -> None:
@@ -51,10 +53,15 @@ def main() -> None:
     parser.add_argument("journal", help="仕訳帳CSVファイルのパス")
     args = parser.parse_args()
 
-    journal = load_journal(args.journal)
-    warnings = check_monthly_sales(journal)
+    try:
+        journal = load_journal(args.journal)
+    except DataFileError as e:
+        print(f"エラー: {e}", file=sys.stderr)
+        sys.exit(1)
 
-    if warnings > 0:
+    result = check_monthly_sales(journal)
+
+    if result.warnings > 0:
         sys.exit(1)
 
 

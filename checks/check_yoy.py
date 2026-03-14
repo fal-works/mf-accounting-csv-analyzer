@@ -17,7 +17,9 @@ import argparse
 import sys
 from collections import defaultdict
 
-from checks.common import SKIP_ACCOUNTS_COMMON, load_journal, parse_amount, parse_date, print_header, print_ok, print_warning
+from checks.common import SKIP_ACCOUNTS_COMMON, CheckResult, DataFileError, load_journal, parse_amount, parse_date, print_header, print_ok, print_warning
+
+MULTI_YEAR = True
 
 # 前年比でこの倍率以上の変動を警告
 CHANGE_THRESHOLD = 2.0
@@ -26,7 +28,7 @@ CHANGE_THRESHOLD = 2.0
 MIN_CHANGE_AMOUNT = 10000
 
 
-def check_yoy(all_rows: list[dict]) -> int:
+def check_yoy(all_rows: list[dict]) -> CheckResult:
     """年度間の勘定科目別合計を比較する。"""
 
     # 年度 × 科目 → 合計金額を集計
@@ -53,8 +55,7 @@ def check_yoy(all_rows: list[dict]) -> int:
     years = sorted(yearly.keys())
     if len(years) < 2:
         print_header("年度間比較チェック")
-        print_warning("比較には最低2年度分のデータが必要です")
-        return 0
+        return CheckResult(0, skipped=True, reason="比較には最低2年度分のデータが必要です")
 
     # --- 変動チェック ---
     print_header("年度間 大幅変動チェック")
@@ -108,8 +109,6 @@ def check_yoy(all_rows: list[dict]) -> int:
     if warnings == 0:
         print_ok("大幅変動なし")
 
-    result = warnings
-
     # --- 年度別集計表 ---
     print_header("年度別 勘定科目合計")
     print("科目\t" + "\t".join(str(y) for y in years))
@@ -117,7 +116,7 @@ def check_yoy(all_rows: list[dict]) -> int:
         vals = "\t".join(str(yearly[y].get(account, 0)) for y in years)
         print(f"{account}\t{vals}")
 
-    return result
+    return CheckResult(warnings)
 
 
 def main() -> None:
@@ -125,13 +124,17 @@ def main() -> None:
     parser.add_argument("journals", nargs="+", help="仕訳帳CSVファイルのパス（複数可・年度順推奨）")
     args = parser.parse_args()
 
-    all_rows: list[dict] = []
-    for path in args.journals:
-        all_rows.extend(load_journal(path))
+    try:
+        all_rows: list[dict] = []
+        for path in args.journals:
+            all_rows.extend(load_journal(path))
+    except DataFileError as e:
+        print(f"エラー: {e}", file=sys.stderr)
+        sys.exit(1)
 
-    warnings = check_yoy(all_rows)
+    result = check_yoy(all_rows)
 
-    if warnings > 0:
+    if result.warnings > 0:
         sys.exit(1)
 
 

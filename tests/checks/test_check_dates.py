@@ -25,7 +25,7 @@ class TestCheckDates:
         result = check_monthly_sales(rows)
         out = capsys.readouterr().out
         assert "OK" in out
-        assert result == 0
+        assert result.warnings == 0
 
     def test_missing_months(self, capsys):
         rows = self._make_monthly_sales(missing_months={3, 7})
@@ -34,4 +34,4 @@ class TestCheckDates:
         assert "2025/03" in out
         assert "2025/07" in out
         assert "WARN" in out
-        assert result > 0
+        assert result.warnings > 0

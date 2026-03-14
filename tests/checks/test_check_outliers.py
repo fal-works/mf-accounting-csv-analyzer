@@ -13,7 +13,7 @@ class TestCheckOutliers:
         result = check_outliers(rows)
         out = capsys.readouterr().out
         assert "OK" in out
-        assert result == 0
+        assert result.warnings == 0
 
     def test_outlier_detected(self, capsys):
         rows = [
@@ -26,7 +26,7 @@ class TestCheckOutliers:
         out = capsys.readouterr().out
         assert "WARN" in out
         assert "500,000" in out
-        assert result > 0
+        assert result.warnings > 0
 
     def test_skip_accounts_ignored(self, capsys):
         """SKIP_ACCOUNTS に含まれる科目は検査対象外。"""
@@ -38,4 +38,4 @@ class TestCheckOutliers:
         result = check_outliers(rows)
         out = capsys.readouterr().out
         assert "OK" in out
-        assert result == 0
+        assert result.warnings == 0

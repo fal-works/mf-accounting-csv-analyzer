@@ -13,7 +13,7 @@ class TestCheckDuplicates:
         result = check_duplicate_entries(rows)
         out = capsys.readouterr().out
         assert "OK" in out
-        assert result == 0
+        assert result.warnings == 0
 
     def test_duplicate_detected(self, capsys):
         row = make_simple_row("1", "2025/01/15", "通信費", "普通預金", "5000", summary="A")
@@ -21,7 +21,7 @@ class TestCheckDuplicates:
         result = check_duplicate_entries([row, dup])
         out = capsys.readouterr().out
         assert "WARN" in out
-        assert result > 0
+        assert result.warnings > 0
 
     def test_same_tx_no_not_flagged(self, capsys):
         """同一取引No内の複合仕訳は重複としない。"""
@@ -30,4 +30,4 @@ class TestCheckDuplicates:
         result = check_duplicate_entries([row1, row2])
         out = capsys.readouterr().out
         assert "OK" in out
-        assert result == 0
+        assert result.warnings == 0

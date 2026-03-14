@@ -17,7 +17,7 @@ class TestCheckTax:
             ),
         ]
         warnings = check_tax_categories(rows)
-        assert warnings == 0
+        assert warnings.warnings == 0
 
     def test_invalid_tax_category(self, capsys):
         rows = [
@@ -27,7 +27,7 @@ class TestCheckTax:
             ),
         ]
         warnings = check_tax_categories(rows)
-        assert warnings > 0
+        assert warnings.warnings > 0
         out = capsys.readouterr().out
         assert "不明な区分" in out
 
@@ -40,4 +40,4 @@ class TestCheckTax:
             ),
         ]
         warnings = check_tax_categories(rows)
-        assert warnings > 0
+        assert warnings.warnings > 0

@@ -19,7 +19,9 @@ import argparse
 import sys
 from collections import defaultdict
 
-from checks.common import SKIP_ACCOUNTS_COMMON, load_journal, month_key, parse_date, print_header, print_ok, print_warning
+from checks.common import SKIP_ACCOUNTS_COMMON, CheckResult, DataFileError, load_journal, month_key, parse_date, print_header, print_ok, print_warning
+
+MULTI_YEAR = False
 
 # 年間でこの月数以上計上されていれば「定期経費」とみなす
 MONTHLY_THRESHOLD = 10
@@ -28,7 +30,7 @@ MONTHLY_THRESHOLD = 10
 SKIP_ACCOUNTS = SKIP_ACCOUNTS_COMMON | {"売上高"}
 
 
-def check_recurring(rows: list[dict]) -> int:
+def check_recurring(rows: list[dict]) -> CheckResult:
     """定期的な経費の欠落をチェックする。"""
     print_header("定期経費 欠落チェック")
 
@@ -55,8 +57,7 @@ def check_recurring(rows: list[dict]) -> int:
             account_months[(account, sub)].add(mk)
 
     if not all_months:
-        print_warning("データがありません")
-        return 0
+        return CheckResult(0, skipped=True, reason="データがありません")
 
     # 年度を特定（データ中の最頻年）
     year = int(min(all_months).split("/")[0])
@@ -88,7 +89,7 @@ def check_recurring(rows: list[dict]) -> int:
     elif warnings == 0:
         print_ok("定期経費の欠落なし")
 
-    return warnings
+    return CheckResult(warnings)
 
 
 def main() -> None:
@@ -96,10 +97,15 @@ def main() -> None:
     parser.add_argument("journal", help="仕訳帳CSVファイルのパス")
     args = parser.parse_args()
 
-    journal = load_journal(args.journal)
-    warnings = check_recurring(journal)
+    try:
+        journal = load_journal(args.journal)
+    except DataFileError as e:
+        print(f"エラー: {e}", file=sys.stderr)
+        sys.exit(1)
 
-    if warnings > 0:
+    result = check_recurring(journal)
+
+    if result.warnings > 0:
         sys.exit(1)
 
 
