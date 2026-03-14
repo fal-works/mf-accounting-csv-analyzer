@@ -11,18 +11,14 @@
   4. 借方と貸方で税区分の組み合わせが矛盾していないか
 """
 
-import argparse
-import sys
-
 from checks.common import (
     SKIP_ACCOUNTS_COMMON,
     CheckResult,
-    DataFileError,
-    load_journal,
     print_error,
     print_header,
     print_ok,
     print_warning,
+    run_check_cli,
 )
 from checks.journal_columns import SIDES, TX_DATE, TX_NO
 
@@ -100,17 +96,7 @@ def check_tax_categories(rows: list[dict]) -> CheckResult:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="仕訳帳の税区分チェック")
-    parser.add_argument("journal", help="仕訳帳CSVファイルのパス")
-    args = parser.parse_args()
-
-    try:
-        journal = load_journal(args.journal)
-    except DataFileError as e:
-        print(f"エラー: {e}", file=sys.stderr)
-        sys.exit(1)
-
-    check_tax_categories(journal)
+    run_check_cli(check_tax_categories, "仕訳帳の税区分チェック")
 
 
 if __name__ == "__main__":

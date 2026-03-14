@@ -1,10 +1,20 @@
 """common.py のユニットテスト。"""
 
 from datetime import date
+from pathlib import Path
 
 import pytest
 
-from checks.common import SKIP_ACCOUNTS_COMMON, CheckResult, DataFileError, month_key, parse_amount, parse_date, read_csv
+from checks.common import (
+    SKIP_ACCOUNTS_COMMON,
+    CheckResult,
+    DataFileError,
+    month_key,
+    parse_amount,
+    parse_date,
+    read_csv,
+    run_check_cli,
+)
 
 
 class TestParseDate:
@@ -73,3 +83,36 @@ class TestDataFileError:
     def test_raises_on_missing_file(self):
         with pytest.raises(DataFileError):
             read_csv("/tmp/nonexistent_file_for_test.csv")
+
+
+class TestRunCheckCli:
+    def test_single_file_passes_loaded_rows(self, monkeypatch):
+        seen = []
+
+        monkeypatch.setattr("checks.common.load_journal", lambda _path: [{"id": "1"}])
+        monkeypatch.setattr("sys.argv", ["prog", "dummy.csv"])
+
+        def fake_check(rows):
+            seen.append(rows)
+            return CheckResult(0)
+
+        run_check_cli(fake_check, "single")
+
+        assert seen == [[{"id": "1"}]]
+
+    def test_multi_file_combines_rows(self, monkeypatch):
+        monkeypatch.setattr(
+            "checks.common.load_journal",
+            lambda path: [{"path": Path(path).name}],
+        )
+        monkeypatch.setattr("sys.argv", ["prog", "a.csv", "b.csv"])
+
+        seen = []
+
+        def fake_check(rows):
+            seen.append(rows)
+            return CheckResult(0)
+
+        run_check_cli(fake_check, "multi", multi_file=True)
+
+        assert seen == [[{"path": "a.csv"}, {"path": "b.csv"}]]

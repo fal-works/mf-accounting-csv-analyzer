@@ -1,9 +1,11 @@
 """仕訳帳CSVの共通読み込みユーティリティ。"""
 
+import argparse
 import csv
+import sys
 from datetime import date, datetime
 from pathlib import Path
-from typing import NamedTuple
+from typing import Callable, NamedTuple
 
 from checks.journal_columns import JOURNAL_COLUMNS
 
@@ -38,6 +40,34 @@ def load_journal(path: str | Path) -> list[dict[str, str]]:
     if missing_columns:
         raise DataFileError(f"仕訳帳CSVの必須カラムが不足しています: {', '.join(missing_columns)}")
     return rows
+
+
+def run_check_cli(
+    check_fn: Callable[[list[dict[str, str]]], CheckResult],
+    description: str,
+    *,
+    multi_file: bool = False,
+) -> None:
+    """標準的なチェックCLIを実行する。"""
+    parser = argparse.ArgumentParser(description=description)
+    if multi_file:
+        parser.add_argument("journals", nargs="+", help="仕訳帳CSVファイルのパス（複数可）")
+    else:
+        parser.add_argument("journal", help="仕訳帳CSVファイルのパス")
+    args = parser.parse_args()
+
+    try:
+        if multi_file:
+            rows: list[dict[str, str]] = []
+            for path in args.journals:
+                rows.extend(load_journal(path))
+        else:
+            rows = load_journal(args.journal)
+    except DataFileError as e:
+        print(f"エラー: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    check_fn(rows)
 
 
 def print_header(title: str) -> None:

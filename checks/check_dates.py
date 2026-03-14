@@ -8,10 +8,7 @@
   1. 売上高の計上がない月がないか（入力忘れの検出）
 """
 
-import argparse
-import sys
-
-from checks.common import CheckResult, DataFileError, load_journal, month_key, parse_date, print_header, print_ok, print_warning
+from checks.common import CheckResult, month_key, parse_date, print_header, print_ok, print_warning, run_check_cli
 from checks.journal_columns import CREDIT_ACCOUNT, TX_DATE
 
 MULTI_YEAR = False
@@ -50,17 +47,7 @@ def check_monthly_sales(rows: list[dict]) -> CheckResult:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="仕訳帳の売上計上漏れチェック")
-    parser.add_argument("journal", help="仕訳帳CSVファイルのパス")
-    args = parser.parse_args()
-
-    try:
-        journal = load_journal(args.journal)
-    except DataFileError as e:
-        print(f"エラー: {e}", file=sys.stderr)
-        sys.exit(1)
-
-    check_monthly_sales(journal)
+    run_check_cli(check_monthly_sales, "仕訳帳の売上計上漏れチェック")
 
 
 if __name__ == "__main__":

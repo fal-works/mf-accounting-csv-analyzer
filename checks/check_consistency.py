@@ -13,11 +13,9 @@
   摘要ごとに使われた勘定科目の組み合わせと、少数派の取引を警告として表示する。
 """
 
-import argparse
-import sys
 from collections import defaultdict
 
-from checks.common import CheckResult, DataFileError, load_journal, print_header, print_ok, print_warning
+from checks.common import CheckResult, print_header, print_ok, print_warning, run_check_cli
 from checks.journal_columns import SIDES, SUMMARY, TX_DATE, TX_NO
 
 MULTI_YEAR = True
@@ -79,19 +77,7 @@ def check_consistency(all_rows: list[dict]) -> CheckResult:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="勘定科目と摘要の一貫性チェック")
-    parser.add_argument("journals", nargs="+", help="仕訳帳CSVファイルのパス（複数可）")
-    args = parser.parse_args()
-
-    try:
-        all_rows: list[dict] = []
-        for path in args.journals:
-            all_rows.extend(load_journal(path))
-    except DataFileError as e:
-        print(f"エラー: {e}", file=sys.stderr)
-        sys.exit(1)
-
-    check_consistency(all_rows)
+    run_check_cli(check_consistency, "勘定科目と摘要の一貫性チェック", multi_file=True)
 
 
 if __name__ == "__main__":

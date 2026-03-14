@@ -12,11 +12,9 @@
   取引先ごとに使われた科目・税区分の組み合わせを集計し、少数派パターンを警告する。
 """
 
-import argparse
-import sys
 from collections import defaultdict
 
-from checks.common import SKIP_ACCOUNTS_COMMON, CheckResult, DataFileError, load_journal, print_header, print_ok, print_warning
+from checks.common import SKIP_ACCOUNTS_COMMON, CheckResult, print_header, print_ok, print_warning, run_check_cli
 from checks.journal_columns import DEBIT_ACCOUNT, DEBIT_AMOUNT, DEBIT_TAX, DEBIT_VENDOR, SUMMARY, TX_DATE, TX_NO
 
 MULTI_YEAR = True
@@ -77,19 +75,11 @@ def check_vendor_consistency(all_rows: list[dict]) -> CheckResult:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="取引先ごとの勘定科目・税区分の一貫性チェック")
-    parser.add_argument("journals", nargs="+", help="仕訳帳CSVファイルのパス（複数可）")
-    args = parser.parse_args()
-
-    try:
-        all_rows: list[dict] = []
-        for path in args.journals:
-            all_rows.extend(load_journal(path))
-    except DataFileError as e:
-        print(f"エラー: {e}", file=sys.stderr)
-        sys.exit(1)
-
-    check_vendor_consistency(all_rows)
+    run_check_cli(
+        check_vendor_consistency,
+        "取引先ごとの勘定科目・税区分の一貫性チェック",
+        multi_file=True,
+    )
 
 
 if __name__ == "__main__":

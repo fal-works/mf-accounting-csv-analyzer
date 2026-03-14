@@ -15,11 +15,9 @@
   定期的に計上されている経費科目と、欠落月の一覧。
 """
 
-import argparse
-import sys
 from collections import defaultdict
 
-from checks.common import SKIP_ACCOUNTS_COMMON, CheckResult, DataFileError, load_journal, month_key, parse_date, print_header, print_ok, print_warning
+from checks.common import SKIP_ACCOUNTS_COMMON, CheckResult, month_key, parse_date, print_header, print_ok, print_warning, run_check_cli
 from checks.journal_columns import SIDES, TX_DATE
 
 MULTI_YEAR = False
@@ -91,17 +89,7 @@ def check_recurring(rows: list[dict]) -> CheckResult:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="定期経費の欠落チェック")
-    parser.add_argument("journal", help="仕訳帳CSVファイルのパス")
-    args = parser.parse_args()
-
-    try:
-        journal = load_journal(args.journal)
-    except DataFileError as e:
-        print(f"エラー: {e}", file=sys.stderr)
-        sys.exit(1)
-
-    check_recurring(journal)
+    run_check_cli(check_recurring, "定期経費の欠落チェック")
 
 
 if __name__ == "__main__":

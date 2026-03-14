@@ -8,11 +8,9 @@
   1. 同一日・同一科目・同一金額・同一摘要の仕訳が複数存在しないか（二重入力の検出）
 """
 
-import argparse
-import sys
 from collections import defaultdict
 
-from checks.common import CheckResult, DataFileError, load_journal, print_header, print_ok, print_warning
+from checks.common import CheckResult, print_header, print_ok, print_warning, run_check_cli
 from checks.journal_columns import (
     CREDIT_ACCOUNT,
     CREDIT_AMOUNT,
@@ -78,17 +76,7 @@ def check_duplicate_entries(rows: list[dict]) -> CheckResult:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="仕訳帳の重複仕訳チェック")
-    parser.add_argument("journal", help="仕訳帳CSVファイルのパス")
-    args = parser.parse_args()
-
-    try:
-        journal = load_journal(args.journal)
-    except DataFileError as e:
-        print(f"エラー: {e}", file=sys.stderr)
-        sys.exit(1)
-
-    check_duplicate_entries(journal)
+    run_check_cli(check_duplicate_entries, "仕訳帳の重複仕訳チェック")
 
 
 if __name__ == "__main__":

@@ -118,6 +118,7 @@ def print_summary(all_rows: list[dict]) -> None:
         print(f"{account}\t{n}\t{total}\t{avg:.0f}\t{med:.0f}\t{lo}\t{hi}")
 
 
+# 独自オプション --summary があるため run_check_cli は使わず独自 main() を維持
 def main() -> None:
     parser = argparse.ArgumentParser(description="仕訳帳の異常値チェック")
     parser.add_argument("journals", nargs="+", help="仕訳帳CSVファイルのパス（複数可）")

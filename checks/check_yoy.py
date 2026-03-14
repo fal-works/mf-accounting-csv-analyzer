@@ -13,11 +13,9 @@
   年度間で大幅に変動した科目の一覧と、年度別の集計表。
 """
 
-import argparse
-import sys
 from collections import defaultdict
 
-from checks.common import SKIP_ACCOUNTS_COMMON, CheckResult, DataFileError, load_journal, parse_amount, parse_date, print_header, print_ok, print_warning
+from checks.common import SKIP_ACCOUNTS_COMMON, CheckResult, parse_amount, parse_date, print_header, print_ok, print_warning, run_check_cli
 from checks.journal_columns import SIDES, TX_DATE
 
 MULTI_YEAR = True
@@ -118,19 +116,7 @@ def check_yoy(all_rows: list[dict]) -> CheckResult:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="勘定科目の年度間比較チェック")
-    parser.add_argument("journals", nargs="+", help="仕訳帳CSVファイルのパス（複数可・年度順推奨）")
-    args = parser.parse_args()
-
-    try:
-        all_rows: list[dict] = []
-        for path in args.journals:
-            all_rows.extend(load_journal(path))
-    except DataFileError as e:
-        print(f"エラー: {e}", file=sys.stderr)
-        sys.exit(1)
-
-    check_yoy(all_rows)
+    run_check_cli(check_yoy, "勘定科目の年度間比較チェック", multi_file=True)
 
 
 if __name__ == "__main__":
