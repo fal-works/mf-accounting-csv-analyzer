@@ -1,24 +1,15 @@
 """仕訳帳CSVのカラム名定義。"""
 
-TX_NO = "取引No"
-TX_DATE = "取引日"
+import json
+from pathlib import Path
 
-DEBIT_ACCOUNT = "借方勘定科目"
-DEBIT_SUBACCOUNT = "借方補助科目"
-DEBIT_VENDOR = "借方取引先"
-DEBIT_TAX = "借方税区分"
-DEBIT_AMOUNT = "借方金額(円)"
+_SCHEMA = json.loads(
+    (Path(__file__).resolve().parent.parent / "schema" / "journal.json").read_text(
+        encoding="utf-8"
+    )
+)
 
-CREDIT_ACCOUNT = "貸方勘定科目"
-CREDIT_SUBACCOUNT = "貸方補助科目"
-CREDIT_VENDOR = "貸方取引先"
-CREDIT_TAX = "貸方税区分"
-CREDIT_AMOUNT = "貸方金額(円)"
-
-SUMMARY = "摘要"
-MEMO = "メモ"
-
-JOURNAL_COLUMNS = [
+(
     TX_NO,
     TX_DATE,
     DEBIT_ACCOUNT,
@@ -33,7 +24,9 @@ JOURNAL_COLUMNS = [
     CREDIT_AMOUNT,
     SUMMARY,
     MEMO,
-]
+) = _SCHEMA["columns"]
+
+JOURNAL_COLUMNS = list(_SCHEMA["columns"])
 
 
 def side_column(side: str, kind: str) -> str:

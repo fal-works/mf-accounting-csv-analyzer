@@ -1,8 +1,4 @@
-// ---------------------------------------------------------------------------
-// CSV Type Definitions
-// ---------------------------------------------------------------------------
-// Each entry defines a CSV type: its formal columns and the filename to save as.
-// To add a new type, just add an entry here.
+import csvTypesIndex from "../schema/csv-types.json";
 
 export interface CsvTypeDef {
   saveName: string;
@@ -12,28 +8,22 @@ export interface CsvTypeDef {
   dateColumn: string;
 }
 
-export const CSV_TYPES: CsvTypeDef[] = [
-  {
-    saveName: "仕訳帳.csv",
-    columns: [
-      "取引No",
-      "取引日",
-      "借方勘定科目",
-      "借方補助科目",
-      "借方取引先",
-      "借方税区分",
-      "借方金額(円)",
-      "貸方勘定科目",
-      "貸方補助科目",
-      "貸方取引先",
-      "貸方税区分",
-      "貸方金額(円)",
-      "摘要",
-      "メモ",
-    ],
-    dateColumn: "取引日",
+type CsvSchemaRef = { schema: string };
+
+const schemaModules = import.meta.glob<CsvTypeDef>("../schema/*.json", {
+  eager: true,
+  import: "default",
+});
+
+export const CSV_TYPES: CsvTypeDef[] = (csvTypesIndex as CsvSchemaRef[]).map(
+  ({ schema }) => {
+    const csvType = schemaModules[`../schema/${schema}`];
+    if (!csvType) {
+      throw new Error(`Unknown CSV schema: ${schema}`);
+    }
+    return csvType;
   },
-];
+);
 
 // ---------------------------------------------------------------------------
 // HTML escaping

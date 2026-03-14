@@ -3,9 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "typecheck": "tsc -p gui/tsconfig.json --noEmit && tsc -p gui/tsconfig.browser.json",
+    "typecheck": "tsc -p gui/tsconfig.server.json --noEmit && tsc -p gui/tsconfig.json",
     "test": "vitest run",
-    "build": "tsc -p gui/tsconfig.json && vite build gui",
+    "build": "tsc -p gui/tsconfig.server.json && vite build gui",
     "start": "pnpm build && node gui/dist/server.js"
   },
   "devDependencies": {
