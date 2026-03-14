@@ -5,10 +5,8 @@
     "moduleResolution": "bundler",
     "lib": ["ES2024", "DOM", "DOM.Iterable"],
     "strict": true,
-    "outDir": "./dist",
-    "rootDir": ".",
-    "sourceMap": false,
+    "noEmit": true,
     "skipLibCheck": true
   },
-  "include": ["csv-importer.ts", "csv-utils.ts"]
+  "include": ["csv-importer.ts", "csv-utils.ts", "vite.config.ts"]
 }

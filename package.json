@@ -3,14 +3,15 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "typecheck": "tsc -p gui/tsconfig.json --noEmit && tsc -p gui/tsconfig.browser.json --noEmit",
+    "typecheck": "tsc -p gui/tsconfig.json --noEmit && tsc -p gui/tsconfig.browser.json",
     "test": "vitest run",
-    "build": "tsc -p gui/tsconfig.json && tsc -p gui/tsconfig.browser.json",
+    "build": "tsc -p gui/tsconfig.json && vite build gui",
     "start": "pnpm build && node gui/dist/server.js"
   },
   "devDependencies": {
     "@types/node": "^25.5.0",
     "typescript": "^5.9.3",
+    "vite": "^8.0.0",
     "vitest": "^4.1.0"
   }
 }

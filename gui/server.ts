@@ -9,7 +9,7 @@ const PORT = 3456;
 // dist/server.js → gui/dist/, so ../.. = repo root
 const REPO_ROOT = path.resolve(import.meta.dirname, "../..");
 const DATA_DIR = path.join(REPO_ROOT, "data");
-const GUI_DIR = path.join(REPO_ROOT, "gui");
+const STATIC_DIR = path.join(REPO_ROOT, "gui/dist/browser");
 
 const MIME: Record<string, string> = {
   ".html": "text/html; charset=utf-8",
@@ -40,13 +40,13 @@ const server = http.createServer(async (req, res) => {
     return handleImport(req, res);
   }
 
-  // GET — serve static files from gui/
+  // GET — serve static files from Vite build output
   if (req.method === "GET") {
     const urlPath = req.url === "/" ? "/csv-importer.html" : req.url!;
-    const filePath = path.resolve(GUI_DIR, urlPath.slice(1));
+    const filePath = path.resolve(STATIC_DIR, urlPath.slice(1));
 
     // Prevent directory traversal
-    if (!filePath.startsWith(GUI_DIR + path.sep) && filePath !== GUI_DIR) {
+    if (!filePath.startsWith(STATIC_DIR + path.sep) && filePath !== STATIC_DIR) {
       res.writeHead(403);
       res.end("Forbidden");
       return;
@@ -55,7 +55,7 @@ const server = http.createServer(async (req, res) => {
     try {
       // Resolve symlinks and re-check
       const realPath = await fs.realpath(filePath);
-      const realGUI = await fs.realpath(GUI_DIR);
+      const realGUI = await fs.realpath(STATIC_DIR);
       if (!realPath.startsWith(realGUI + path.sep) && realPath !== realGUI) {
         res.writeHead(403);
         res.end("Forbidden");
