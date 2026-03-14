@@ -18,6 +18,7 @@ import sys
 from collections import defaultdict
 
 from checks.common import SKIP_ACCOUNTS_COMMON, CheckResult, DataFileError, load_journal, parse_amount, parse_date, print_header, print_ok, print_warning
+from checks.journal_columns import CREDIT_ACCOUNT, CREDIT_AMOUNT, DEBIT_ACCOUNT, DEBIT_AMOUNT, TX_DATE
 
 MULTI_YEAR = True
 
@@ -36,13 +37,13 @@ def check_yoy(all_rows: list[dict]) -> CheckResult:
     yearly: dict[int, dict[str, int]] = defaultdict(lambda: defaultdict(int))
 
     for row in all_rows:
-        d = parse_date(row["取引日"])
+        d = parse_date(row[TX_DATE])
         if d is None:
             continue
 
         for acct_col, amt_col in [
-            ("借方勘定科目", "借方金額(円)"),
-            ("貸方勘定科目", "貸方金額(円)"),
+            (DEBIT_ACCOUNT, DEBIT_AMOUNT),
+            (CREDIT_ACCOUNT, CREDIT_AMOUNT),
         ]:
             account = row[acct_col]
             if not account:

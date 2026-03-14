@@ -18,6 +18,7 @@ import sys
 from collections import defaultdict
 
 from checks.common import CheckResult, DataFileError, load_journal, print_header, print_ok, print_warning
+from checks.journal_columns import CREDIT_ACCOUNT, DEBIT_ACCOUNT, SUMMARY, TX_DATE, TX_NO
 
 MULTI_YEAR = True
 
@@ -32,16 +33,16 @@ def check_consistency(all_rows: list[dict]) -> CheckResult:
     credit_map: dict[str, dict[str, list[str]]] = defaultdict(lambda: defaultdict(list))
 
     for row in all_rows:
-        summary = row["摘要"].strip()
+        summary = row[SUMMARY].strip()
         if not summary:
             continue
 
-        tx_info = f"No.{row['取引No']} ({row['取引日']})"
+        tx_info = f"No.{row[TX_NO]} ({row[TX_DATE]})"
 
-        if row["借方勘定科目"]:
-            debit_map[summary][row["借方勘定科目"]].append(tx_info)
-        if row["貸方勘定科目"]:
-            credit_map[summary][row["貸方勘定科目"]].append(tx_info)
+        if row[DEBIT_ACCOUNT]:
+            debit_map[summary][row[DEBIT_ACCOUNT]].append(tx_info)
+        if row[CREDIT_ACCOUNT]:
+            credit_map[summary][row[CREDIT_ACCOUNT]].append(tx_info)
 
     warnings = 0
 

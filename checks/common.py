@@ -5,6 +5,8 @@ from datetime import date, datetime
 from pathlib import Path
 from typing import NamedTuple
 
+from checks.journal_columns import JOURNAL_COLUMNS
+
 
 class CheckResult(NamedTuple):
     """チェック関数の戻り値。"""
@@ -29,7 +31,13 @@ def read_csv(path: str | Path) -> list[dict[str, str]]:
 
 def load_journal(path: str | Path) -> list[dict[str, str]]:
     """仕訳帳CSVを読み込む。"""
-    return read_csv(path)
+    rows = read_csv(path)
+    if not rows:
+        return rows
+    missing_columns = [column for column in JOURNAL_COLUMNS if column not in rows[0]]
+    if missing_columns:
+        raise DataFileError(f"仕訳帳CSVの必須カラムが不足しています: {', '.join(missing_columns)}")
+    return rows
 
 
 def print_header(title: str) -> None:

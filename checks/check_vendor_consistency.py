@@ -17,6 +17,7 @@ import sys
 from collections import defaultdict
 
 from checks.common import SKIP_ACCOUNTS_COMMON, CheckResult, DataFileError, load_journal, print_header, print_ok, print_warning
+from checks.journal_columns import DEBIT_ACCOUNT, DEBIT_AMOUNT, DEBIT_TAX, DEBIT_VENDOR, SUMMARY, TX_DATE, TX_NO
 
 MULTI_YEAR = True
 
@@ -30,17 +31,17 @@ def check_vendor_consistency(all_rows: list[dict]) -> CheckResult:
     )
 
     for row in all_rows:
-        vendor = row["借方取引先"].strip()
-        account = row["借方勘定科目"].strip()
-        tax = row["借方税区分"].strip()
+        vendor = row[DEBIT_VENDOR].strip()
+        account = row[DEBIT_ACCOUNT].strip()
+        tax = row[DEBIT_TAX].strip()
         if not vendor or not account:
             continue
         if account in SKIP_ACCOUNTS_COMMON:
             continue
 
         tx_info = (
-            f"No.{row['取引No']}({row['取引日']}) "
-            f"{account} {row['借方金額(円)']}円 {row['摘要'].strip()}"
+            f"No.{row[TX_NO]}({row[TX_DATE]}) "
+            f"{account} {row[DEBIT_AMOUNT]}円 {row[SUMMARY].strip()}"
         )
         vendor_patterns[vendor][(account, tax)].append(tx_info)
 

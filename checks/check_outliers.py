@@ -18,6 +18,7 @@ import sys
 from collections import defaultdict
 
 from checks.common import SKIP_ACCOUNTS_COMMON, CheckResult, DataFileError, load_journal, parse_amount, print_header, print_ok, print_warning
+from checks.journal_columns import CREDIT_ACCOUNT, CREDIT_AMOUNT, DEBIT_ACCOUNT, DEBIT_AMOUNT, TX_DATE, TX_NO
 
 MULTI_YEAR = True
 
@@ -50,11 +51,11 @@ def check_outliers(all_rows: list[dict]) -> CheckResult:
     account_amounts: dict[str, list[tuple[int, str]]] = defaultdict(list)
 
     for row in all_rows:
-        tx_info = f"No.{row['取引No']} ({row['取引日']})"
+        tx_info = f"No.{row[TX_NO]} ({row[TX_DATE]})"
 
         for side, acct_col, amt_col in [
-            ("借方", "借方勘定科目", "借方金額(円)"),
-            ("貸方", "貸方勘定科目", "貸方金額(円)"),
+            ("借方", DEBIT_ACCOUNT, DEBIT_AMOUNT),
+            ("貸方", CREDIT_ACCOUNT, CREDIT_AMOUNT),
         ]:
             account = row[acct_col]
             if not account:
@@ -100,8 +101,8 @@ def print_summary(all_rows: list[dict]) -> None:
     account_amounts: dict[str, list[int]] = defaultdict(list)
     for row in all_rows:
         for acct_col, amt_col in [
-            ("借方勘定科目", "借方金額(円)"),
-            ("貸方勘定科目", "貸方金額(円)"),
+            (DEBIT_ACCOUNT, DEBIT_AMOUNT),
+            (CREDIT_ACCOUNT, CREDIT_AMOUNT),
         ]:
             account = row[acct_col]
             if not account:

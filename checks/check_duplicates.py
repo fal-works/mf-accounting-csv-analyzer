@@ -13,6 +13,21 @@ import sys
 from collections import defaultdict
 
 from checks.common import CheckResult, DataFileError, load_journal, print_header, print_ok, print_warning
+from checks.journal_columns import (
+    CREDIT_ACCOUNT,
+    CREDIT_AMOUNT,
+    CREDIT_SUBACCOUNT,
+    CREDIT_TAX,
+    CREDIT_VENDOR,
+    DEBIT_ACCOUNT,
+    DEBIT_AMOUNT,
+    DEBIT_SUBACCOUNT,
+    DEBIT_TAX,
+    DEBIT_VENDOR,
+    SUMMARY,
+    TX_DATE,
+    TX_NO,
+)
 
 MULTI_YEAR = False
 
@@ -22,24 +37,24 @@ def check_duplicate_entries(rows: list[dict]) -> CheckResult:
     print_header("重複仕訳チェック")
 
     entry_key = lambda row: (
-        row["取引日"],
-        row["借方勘定科目"],
-        row["借方補助科目"],
-        row["借方取引先"],
-        row["借方税区分"],
-        row["借方金額(円)"],
-        row["貸方勘定科目"],
-        row["貸方補助科目"],
-        row["貸方取引先"],
-        row["貸方税区分"],
-        row["貸方金額(円)"],
-        row["摘要"],
+        row[TX_DATE],
+        row[DEBIT_ACCOUNT],
+        row[DEBIT_SUBACCOUNT],
+        row[DEBIT_VENDOR],
+        row[DEBIT_TAX],
+        row[DEBIT_AMOUNT],
+        row[CREDIT_ACCOUNT],
+        row[CREDIT_SUBACCOUNT],
+        row[CREDIT_VENDOR],
+        row[CREDIT_TAX],
+        row[CREDIT_AMOUNT],
+        row[SUMMARY],
     )
 
     counts: dict[tuple, list[str]] = defaultdict(list)
     for row in rows:
         key = entry_key(row)
-        counts[key].append(row["取引No"])
+        counts[key].append(row[TX_NO])
 
     warnings = 0
     for key, tx_nos in counts.items():

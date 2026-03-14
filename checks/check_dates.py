@@ -12,6 +12,7 @@ import argparse
 import sys
 
 from checks.common import CheckResult, DataFileError, load_journal, month_key, parse_date, print_header, print_ok, print_warning
+from checks.journal_columns import CREDIT_ACCOUNT, TX_DATE
 
 MULTI_YEAR = False
 
@@ -24,13 +25,13 @@ def check_monthly_sales(rows: list[dict]) -> CheckResult:
     all_months: set[str] = set()
 
     for row in rows:
-        d = parse_date(row["取引日"])
+        d = parse_date(row[TX_DATE])
         if d is None:
             continue
         mk = month_key(d)
         all_months.add(mk)
 
-        if row["貸方勘定科目"] == "売上高":
+        if row[CREDIT_ACCOUNT] == "売上高":
             months_with_sales.add(mk)
 
     if all_months:

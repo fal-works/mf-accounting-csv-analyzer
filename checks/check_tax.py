@@ -15,6 +15,7 @@ import argparse
 import sys
 
 from checks.common import CheckResult, DataFileError, load_journal, print_error, print_header, print_ok, print_warning
+from checks.journal_columns import CREDIT_ACCOUNT, CREDIT_TAX, DEBIT_ACCOUNT, DEBIT_TAX, TX_DATE, TX_NO
 
 MULTI_YEAR = False
 
@@ -56,11 +57,11 @@ def check_tax_categories(rows: list[dict]) -> CheckResult:
     print_header("税区分の有効値チェック")
     invalid_count = 0
     for row in rows:
-        for side, col in [("借方", "借方税区分"), ("貸方", "貸方税区分")]:
+        for side, col in [("借方", DEBIT_TAX), ("貸方", CREDIT_TAX)]:
             val = row[col]
             if val not in VALID_TAX_CATEGORIES:
                 print_error(
-                    f"取引No {row['取引No']} ({row['取引日']}): "
+                    f"取引No {row[TX_NO]} ({row[TX_DATE]}): "
                     f"{side}に未知の税区分「{val}」"
                 )
                 invalid_count += 1
@@ -74,11 +75,11 @@ def check_tax_categories(rows: list[dict]) -> CheckResult:
     mismatch_count = 0
 
     for row in rows:
-        tx_info = f"取引No {row['取引No']} ({row['取引日']})"
+        tx_info = f"取引No {row[TX_NO]} ({row[TX_DATE]})"
 
         # 借方科目のチェック
-        d_account = row["借方勘定科目"]
-        d_tax = row["借方税区分"]
+        d_account = row[DEBIT_ACCOUNT]
+        d_tax = row[DEBIT_TAX]
         if d_account and d_tax:
             # 非課税科目に課税区分が付いている
             if d_account in NON_TAXABLE_ACCOUNTS and d_tax not in {"対象外", ""}:
@@ -96,8 +97,8 @@ def check_tax_categories(rows: list[dict]) -> CheckResult:
                 mismatch_count += 1
 
         # 貸方科目のチェック
-        c_account = row["貸方勘定科目"]
-        c_tax = row["貸方税区分"]
+        c_account = row[CREDIT_ACCOUNT]
+        c_tax = row[CREDIT_TAX]
         if c_account and c_tax:
             if c_account in NON_TAXABLE_ACCOUNTS and c_tax not in {"対象外", ""}:
                 print_error(f"{tx_info}: 貸方「{c_account}」に税区分「{c_tax}」は不適切")

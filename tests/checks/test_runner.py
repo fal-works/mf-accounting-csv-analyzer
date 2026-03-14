@@ -6,20 +6,13 @@ import csv
 import tempfile
 from pathlib import Path
 
+from checks.journal_columns import JOURNAL_COLUMNS
 from conftest import make_simple_row
-
-# テスト用の最小限CSV
-_COLUMNS = [
-    "取引No", "取引日",
-    "借方勘定科目", "借方補助科目", "借方取引先", "借方税区分", "借方金額(円)",
-    "貸方勘定科目", "貸方補助科目", "貸方取引先", "貸方税区分", "貸方金額(円)",
-    "摘要", "メモ",
-]
 
 
 def _write_csv(rows: list[dict], path: Path) -> None:
     with open(path, "w", encoding="utf-8", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=_COLUMNS)
+        writer = csv.DictWriter(f, fieldnames=JOURNAL_COLUMNS)
         writer.writeheader()
         for row in rows:
             writer.writerow(row)
@@ -49,7 +42,7 @@ class TestRunAll:
         ]
         with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False, encoding="utf-8") as f:
             tmp = Path(f.name)
-            writer = csv.DictWriter(f, fieldnames=_COLUMNS)
+            writer = csv.DictWriter(f, fieldnames=JOURNAL_COLUMNS)
             writer.writeheader()
             writer.writerow(rows[0])
 
@@ -65,7 +58,7 @@ class TestRunAll:
         ]
         with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False, encoding="utf-8") as f:
             tmp = Path(f.name)
-            writer = csv.DictWriter(f, fieldnames=_COLUMNS)
+            writer = csv.DictWriter(f, fieldnames=JOURNAL_COLUMNS)
             writer.writeheader()
             writer.writerow(rows[0])
 

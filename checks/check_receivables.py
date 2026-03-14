@@ -25,6 +25,7 @@ import sys
 from collections import defaultdict
 
 from checks.common import CheckResult, DataFileError, load_journal, month_key, parse_amount, parse_date, print_header, print_ok, print_warning
+from checks.journal_columns import TX_DATE, side_column
 
 MULTI_YEAR = False
 
@@ -50,20 +51,20 @@ def check_receivables(rows: list[dict]) -> CheckResult:
         monthly_decrease: dict[str, int] = defaultdict(int)
 
         for row in rows:
-            d = parse_date(row["取引日"])
+            d = parse_date(row[TX_DATE])
             if d is None:
                 continue
             mk = month_key(d)
 
             # 増加（売掛金なら借方計上、未払金なら貸方計上）
-            if row[f"{inc_side}勘定科目"] == account:
-                amt = parse_amount(row[f"{inc_side}金額(円)"])
+            if row[side_column(inc_side, "勘定科目")] == account:
+                amt = parse_amount(row[side_column(inc_side, "金額(円)")])
                 if amt is not None:
                     monthly_increase[mk] += amt
 
             # 減少（売掛金なら貸方消込、未払金なら借方消込）
-            if row[f"{dec_side}勘定科目"] == account:
-                amt = parse_amount(row[f"{dec_side}金額(円)"])
+            if row[side_column(dec_side, "勘定科目")] == account:
+                amt = parse_amount(row[side_column(dec_side, "金額(円)")])
                 if amt is not None:
                     monthly_decrease[mk] += amt
 
