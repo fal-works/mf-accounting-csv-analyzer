@@ -18,7 +18,7 @@ import sys
 from collections import defaultdict
 
 from checks.common import SKIP_ACCOUNTS_COMMON, CheckResult, DataFileError, load_journal, parse_amount, parse_date, print_header, print_ok, print_warning
-from checks.journal_columns import CREDIT_ACCOUNT, CREDIT_AMOUNT, DEBIT_ACCOUNT, DEBIT_AMOUNT, TX_DATE
+from checks.journal_columns import SIDES, TX_DATE
 
 MULTI_YEAR = True
 
@@ -41,14 +41,11 @@ def check_yoy(all_rows: list[dict]) -> CheckResult:
         if d is None:
             continue
 
-        for acct_col, amt_col in [
-            (DEBIT_ACCOUNT, DEBIT_AMOUNT),
-            (CREDIT_ACCOUNT, CREDIT_AMOUNT),
-        ]:
-            account = row[acct_col]
+        for side in SIDES:
+            account = row[side.account]
             if not account:
                 continue
-            amount = parse_amount(row[amt_col])
+            amount = parse_amount(row[side.amount])
             if amount is None:
                 continue
             yearly[d.year][account] += amount

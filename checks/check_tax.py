@@ -15,7 +15,7 @@ import argparse
 import sys
 
 from checks.common import CheckResult, DataFileError, load_journal, print_error, print_header, print_ok, print_warning
-from checks.journal_columns import CREDIT_ACCOUNT, CREDIT_TAX, DEBIT_ACCOUNT, DEBIT_TAX, TX_DATE, TX_NO
+from checks.journal_columns import SIDES, TX_DATE, TX_NO
 
 MULTI_YEAR = False
 
@@ -57,12 +57,12 @@ def check_tax_categories(rows: list[dict]) -> CheckResult:
     print_header("税区分の有効値チェック")
     invalid_count = 0
     for row in rows:
-        for side, col in [("借方", DEBIT_TAX), ("貸方", CREDIT_TAX)]:
-            val = row[col]
+        for side in SIDES:
+            val = row[side.tax]
             if val not in VALID_TAX_CATEGORIES:
                 print_error(
                     f"取引No {row[TX_NO]} ({row[TX_DATE]}): "
-                    f"{side}に未知の税区分「{val}」"
+                    f"{side.label}に未知の税区分「{val}」"
                 )
                 invalid_count += 1
 
@@ -77,39 +77,22 @@ def check_tax_categories(rows: list[dict]) -> CheckResult:
     for row in rows:
         tx_info = f"取引No {row[TX_NO]} ({row[TX_DATE]})"
 
-        # 借方科目のチェック
-        d_account = row[DEBIT_ACCOUNT]
-        d_tax = row[DEBIT_TAX]
-        if d_account and d_tax:
-            # 非課税科目に課税区分が付いている
-            if d_account in NON_TAXABLE_ACCOUNTS and d_tax not in {"対象外", ""}:
-                print_error(f"{tx_info}: 借方「{d_account}」に税区分「{d_tax}」は不適切")
+        for side in SIDES:
+            account = row[side.account]
+            tax = row[side.tax]
+            if not account or not tax:
+                continue
+
+            if account in NON_TAXABLE_ACCOUNTS and tax not in {"対象外", ""}:
+                print_error(f"{tx_info}: {side.label}「{account}」に税区分「{tax}」は不適切")
                 mismatch_count += 1
 
-            # 売上科目に仕入税区分
-            if d_account in SALES_ACCOUNTS and d_tax in PURCHASE_TAX:
-                print_error(f"{tx_info}: 借方「{d_account}」に仕入系税区分「{d_tax}」")
+            if account in SALES_ACCOUNTS and tax in PURCHASE_TAX:
+                print_error(f"{tx_info}: {side.label}「{account}」に仕入系税区分「{tax}」")
                 mismatch_count += 1
 
-            # 経費科目に売上税区分
-            if d_account in EXPENSE_ACCOUNTS and d_tax in SALES_TAX:
-                print_error(f"{tx_info}: 借方「{d_account}」に売上系税区分「{d_tax}」")
-                mismatch_count += 1
-
-        # 貸方科目のチェック
-        c_account = row[CREDIT_ACCOUNT]
-        c_tax = row[CREDIT_TAX]
-        if c_account and c_tax:
-            if c_account in NON_TAXABLE_ACCOUNTS and c_tax not in {"対象外", ""}:
-                print_error(f"{tx_info}: 貸方「{c_account}」に税区分「{c_tax}」は不適切")
-                mismatch_count += 1
-
-            if c_account in SALES_ACCOUNTS and c_tax in PURCHASE_TAX:
-                print_error(f"{tx_info}: 貸方「{c_account}」に仕入系税区分「{c_tax}」")
-                mismatch_count += 1
-
-            if c_account in EXPENSE_ACCOUNTS and c_tax in SALES_TAX:
-                print_error(f"{tx_info}: 貸方「{c_account}」に売上系税区分「{c_tax}」")
+            if account in EXPENSE_ACCOUNTS and tax in SALES_TAX:
+                print_error(f"{tx_info}: {side.label}「{account}」に売上系税区分「{tax}」")
                 mismatch_count += 1
 
     if mismatch_count == 0:

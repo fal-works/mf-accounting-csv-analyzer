@@ -18,7 +18,7 @@ import sys
 from collections import defaultdict
 
 from checks.common import CheckResult, DataFileError, load_journal, print_header, print_ok, print_warning
-from checks.journal_columns import CREDIT_ACCOUNT, DEBIT_ACCOUNT, SUMMARY, TX_DATE, TX_NO
+from checks.journal_columns import SIDES, SUMMARY, TX_DATE, TX_NO
 
 MULTI_YEAR = True
 
@@ -29,8 +29,10 @@ def check_consistency(all_rows: list[dict]) -> CheckResult:
 
     # 摘要 → {勘定科目: [取引情報]} を借方・貸方それぞれで集計
     # 空の摘要は対象外（パターン判定できない）
-    debit_map: dict[str, dict[str, list[str]]] = defaultdict(lambda: defaultdict(list))
-    credit_map: dict[str, dict[str, list[str]]] = defaultdict(lambda: defaultdict(list))
+    maps = {
+        side.label: defaultdict(lambda: defaultdict(list))
+        for side in SIDES
+    }
 
     for row in all_rows:
         summary = row[SUMMARY].strip()
@@ -39,14 +41,14 @@ def check_consistency(all_rows: list[dict]) -> CheckResult:
 
         tx_info = f"No.{row[TX_NO]} ({row[TX_DATE]})"
 
-        if row[DEBIT_ACCOUNT]:
-            debit_map[summary][row[DEBIT_ACCOUNT]].append(tx_info)
-        if row[CREDIT_ACCOUNT]:
-            credit_map[summary][row[CREDIT_ACCOUNT]].append(tx_info)
+        for side in SIDES:
+            account = row[side.account]
+            if account:
+                maps[side.label][summary][account].append(tx_info)
 
     warnings = 0
 
-    for side_label, mapping in [("借方", debit_map), ("貸方", credit_map)]:
+    for side_label, mapping in maps.items():
         for summary, accounts in sorted(mapping.items()):
             if len(accounts) <= 1:
                 continue

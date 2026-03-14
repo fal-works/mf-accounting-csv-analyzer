@@ -20,7 +20,7 @@ import sys
 from collections import defaultdict
 
 from checks.common import SKIP_ACCOUNTS_COMMON, CheckResult, DataFileError, load_journal, month_key, parse_date, print_header, print_ok, print_warning
-from checks.journal_columns import CREDIT_ACCOUNT, CREDIT_SUBACCOUNT, DEBIT_ACCOUNT, DEBIT_SUBACCOUNT, TX_DATE
+from checks.journal_columns import SIDES, TX_DATE
 
 MULTI_YEAR = False
 
@@ -47,14 +47,11 @@ def check_recurring(rows: list[dict]) -> CheckResult:
         mk = month_key(d)
         all_months.add(mk)
 
-        for acct_col, sub_col in [
-            (DEBIT_ACCOUNT, DEBIT_SUBACCOUNT),
-            (CREDIT_ACCOUNT, CREDIT_SUBACCOUNT),
-        ]:
-            account = row[acct_col]
+        for side in SIDES:
+            account = row[side.account]
             if not account:
                 continue
-            sub = row[sub_col]
+            sub = row[side.subaccount]
             account_months[(account, sub)].add(mk)
 
     if not all_months:

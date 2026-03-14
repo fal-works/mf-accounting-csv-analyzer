@@ -25,7 +25,7 @@ import sys
 from collections import defaultdict
 
 from checks.common import CheckResult, DataFileError, load_journal, month_key, parse_amount, parse_date, print_header, print_ok, print_warning
-from checks.journal_columns import TX_DATE, side_column
+from checks.journal_columns import CREDIT_SIDE, DEBIT_SIDE, TX_DATE
 
 MULTI_YEAR = False
 
@@ -34,8 +34,8 @@ def check_receivables(rows: list[dict]) -> CheckResult:
     """売掛金・未払金の消込状況をチェックする。"""
 
     targets = {
-        "売掛金": {"increase_side": "借方", "decrease_side": "貸方"},
-        "未払金": {"increase_side": "貸方", "decrease_side": "借方"},
+        "売掛金": {"increase_side": DEBIT_SIDE, "decrease_side": CREDIT_SIDE},
+        "未払金": {"increase_side": CREDIT_SIDE, "decrease_side": DEBIT_SIDE},
     }
 
     warnings = 0
@@ -57,14 +57,14 @@ def check_receivables(rows: list[dict]) -> CheckResult:
             mk = month_key(d)
 
             # 増加（売掛金なら借方計上、未払金なら貸方計上）
-            if row[side_column(inc_side, "勘定科目")] == account:
-                amt = parse_amount(row[side_column(inc_side, "金額(円)")])
+            if row[inc_side.account] == account:
+                amt = parse_amount(row[inc_side.amount])
                 if amt is not None:
                     monthly_increase[mk] += amt
 
             # 減少（売掛金なら貸方消込、未払金なら借方消込）
-            if row[side_column(dec_side, "勘定科目")] == account:
-                amt = parse_amount(row[side_column(dec_side, "金額(円)")])
+            if row[dec_side.account] == account:
+                amt = parse_amount(row[dec_side.amount])
                 if amt is not None:
                     monthly_decrease[mk] += amt
 
