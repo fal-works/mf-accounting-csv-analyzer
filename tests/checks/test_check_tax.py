@@ -41,3 +41,17 @@ class TestCheckTax:
         ]
         warnings = check_tax_categories(rows)
         assert warnings.warnings > 0
+
+    def test_unlisted_expense_account_with_sales_tax(self, capsys):
+        """明示列挙されていない経費科目でも売上系税区分を検出する。"""
+        rows = [
+            make_simple_row(
+                "1", "2025/01/15", "旅費交通費", "普通預金", "5000",
+                debit_tax="課税売上 10% 五種", credit_tax="対象外",
+            ),
+        ]
+        warnings = check_tax_categories(rows)
+        assert warnings.warnings > 0
+        out = capsys.readouterr().out
+        assert "旅費交通費" in out
+        assert "課税売上 10% 五種" in out

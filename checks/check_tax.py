@@ -42,13 +42,6 @@ NON_TAXABLE_ACCOUNTS = {
 # 売上科目
 SALES_ACCOUNTS = {"売上高"}
 
-# 仕入・経費科目
-EXPENSE_ACCOUNTS = {
-    "支払手数料", "水道光熱費", "通信費", "広告宣伝費", "消耗品費",
-    "新聞図書費",
-}
-
-
 def check_tax_categories(rows: list[dict]) -> CheckResult:
     """税区分の妥当性をチェックする。"""
     warnings = 0
@@ -91,7 +84,7 @@ def check_tax_categories(rows: list[dict]) -> CheckResult:
                 print_error(f"{tx_info}: {side.label}「{account}」に仕入系税区分「{tax}」")
                 mismatch_count += 1
 
-            if account in EXPENSE_ACCOUNTS and tax in SALES_TAX:
+            if account not in SALES_ACCOUNTS and account not in NON_TAXABLE_ACCOUNTS and tax in SALES_TAX:
                 print_error(f"{tx_info}: {side.label}「{account}」に売上系税区分「{tax}」")
                 mismatch_count += 1
 
