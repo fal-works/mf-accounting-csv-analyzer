@@ -108,6 +108,17 @@ def parse_amount(value: str) -> int | None:
         return None
 
 
+def median(values: list[int]) -> float:
+    """中央値を計算する。空リストは受け付けない。"""
+    s = sorted(values)
+    n = len(s)
+    if n == 0:
+        raise ValueError("median() requires at least one value")
+    if n % 2 == 1:
+        return float(s[n // 2])
+    return (s[n // 2 - 1] + s[n // 2]) / 2
+
+
 # 資産・負債・資本など、経費分析系チェックでスキップする勘定科目の共通セット
 SKIP_ACCOUNTS_COMMON: frozenset[str] = frozenset({
     "事業主貸", "事業主借", "元入金",

@@ -30,6 +30,7 @@ class TestDiscoverChecks:
         assert "check_tax" in names
         assert "check_dates" in names
         assert "check_yoy" in names
+        assert "check_outliers" not in names
 
     def test_multi_year_flag(self):
         checks = discover_checks()

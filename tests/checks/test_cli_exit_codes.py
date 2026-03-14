@@ -20,7 +20,7 @@ STANDARD_CLI_CASES = [
 
 # 独自 main() を持つスクリプト — モジュール側の load_journal も patch が必要
 CUSTOM_MAIN_CASES = [
-    ("analysis.checks.check_outliers", "check_outliers", ["dummy.csv"]),
+    ("analysis.tools.account_summary", "print_summary", ["dummy.csv"]),
 ]
 
 

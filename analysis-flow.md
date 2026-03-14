@@ -13,39 +13,47 @@
 - `data/memo.md` — 複数年度にまたがる事項（共通の前提、傾向変化、科目の切り換え等）
 - `data/{年度}/memo.md` — 特定年度の偽陽性・既知の事情
 
-## ステップ1: チェック実行
+## ステップ1: スクリプト実行
+
+チェックスクリプトと科目別サマリーを実行し、機械的に検出できる情報を収集する。
 
 ```bash
-# 一括実行（推奨）
+# チェック一括実行（推奨）
 uv run python -m analysis.checks.runner data/*/仕訳帳.csv
 
-# 選択実行・除外
+# チェック選択実行・除外
 uv run python -m analysis.checks.runner data/2025/仕訳帳.csv --only check_tax,check_dates
 uv run python -m analysis.checks.runner data/*/仕訳帳.csv --skip check_yoy
 
-# 一覧表示
+# チェック一覧表示
 uv run python -m analysis.checks.runner --list
 
-# 個別実行
+# チェック個別実行
 uv run python analysis/checks/check_tax.py data/2025/仕訳帳.csv
-uv run python analysis/checks/check_outliers.py data/*/仕訳帳.csv --summary
+
+# 科目別サマリー
+uv run python -m analysis.tools.account_summary data/*/仕訳帳.csv
 ```
 
 全年度横断でまず傾向を掴み、詳細分析は類似した期間（直近3年など）に絞ると偽陽性が減る。
 
-スクリプトの一覧とそれぞれの目的は [analysis/checks/catalog.md](analysis/checks/catalog.md) を参照。
+チェックスクリプトの一覧とそれぞれの目的は [analysis/checks/catalog.md](analysis/checks/catalog.md) を参照。
 
-## ステップ2: 偽陽性の分離
+## ステップ2: 結果の評価
 
-スクリプトの警告には偽陽性が含まれる。
-[analysis/checks/catalog.md](analysis/checks/catalog.md) に記載の「よくある偽陽性」も参考に、AIが要確認の警告を選別する。
+ステップ1の出力を評価し、要確認事項を特定する。
+
+- **チェック警告の偽陽性分離**:
+  [analysis/checks/catalog.md](analysis/checks/catalog.md) に記載の「よくある偽陽性」も参考に、AIが要確認の警告を選別する。
+- **科目別サマリーの確認**:
+  最大値・最小値が極端な科目は、桁間違いや一括計上の可能性を疑う。
 
 ## ステップ3: 個別取引の深掘り
 
-疑わしい取引について元データを直接調査する。
+ステップ2で特定した要確認事項について元データを直接調査する。
 
 - 該当仕訳の**メモ欄**確認（既知の事情が記録されている場合がある）
-- 同じ摘要・取引先の過去仕訳との比較（`rg` が有効）
+- 同じ取引先・類似の摘要の過去仕訳との比較（`rg` が有効）
 - 同月の他の仕訳との関連確認（売掛金の計上と入金の対応など）
 - ステップ0で確認したメモに関連情報がないか再確認
 - 集計が必要なら、まず `uv run python -c "..."` の即興実行を検討する。

@@ -1,4 +1,4 @@
-"""analysis.checks テスト共通のフィクスチャとヘルパー。"""
+"""テスト共通のフィクスチャとヘルパー。"""
 
 from analysis.journal_columns import (
     CREDIT_ACCOUNT,
