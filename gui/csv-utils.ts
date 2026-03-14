@@ -23,11 +23,6 @@ export const CSV_TYPES: CsvTypeDef[] = [
     ],
     dateColumn: "取引日",
   },
-  {
-    saveName: "総勘定元帳.csv",
-    identifyColumns: ["勘定科目", "相手勘定科目", "残高"],
-    dateColumn: "取引日",
-  },
 ];
 
 // ---------------------------------------------------------------------------

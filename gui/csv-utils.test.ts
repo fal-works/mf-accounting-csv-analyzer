@@ -105,31 +105,6 @@ describe("identifyType", () => {
     expect(result!.saveName).toBe("仕訳帳.csv");
   });
 
-  test("identifies 総勘定元帳 by header columns", () => {
-    const header = ["取引日", "勘定科目", "相手勘定科目", "金額", "残高"];
-    const result = identifyType(header, "export.csv");
-    expect(result).not.toBeNull();
-    expect(result!.saveName).toBe("総勘定元帳.csv");
-  });
-
-  test("prefers type with more matching columns", () => {
-    // 仕訳帳 has 4 identifyColumns, 総勘定元帳 has 3
-    // If both match, 仕訳帳 wins because it has a higher score
-    const header = [
-      "取引日",
-      "借方勘定科目",
-      "貸方勘定科目",
-      "借方金額(円)",
-      "貸方金額(円)",
-      "勘定科目",
-      "相手勘定科目",
-      "残高",
-    ];
-    const result = identifyType(header, "export.csv");
-    expect(result).not.toBeNull();
-    expect(result!.saveName).toBe("仕訳帳.csv");
-  });
-
   test("falls back to filename matching", () => {
     const header = ["col1", "col2"];
     const result = identifyType(header, "仕訳帳_2025.csv");
@@ -142,10 +117,10 @@ describe("identifyType", () => {
   });
 
   test("trims header values for matching", () => {
-    const header = [" 勘定科目 ", " 相手勘定科目 ", " 残高 "];
+    const header = [" 借方勘定科目 ", " 貸方勘定科目 ", " 借方金額(円) ", " 貸方金額(円) "];
     const result = identifyType(header, "x.csv");
     expect(result).not.toBeNull();
-    expect(result!.saveName).toBe("総勘定元帳.csv");
+    expect(result!.saveName).toBe("仕訳帳.csv");
   });
 });
 
