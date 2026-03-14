@@ -41,5 +41,5 @@ class TestCheckVendorConsistency:
         ]
         check_vendor_consistency(rows)
         out = capsys.readouterr().out
-        assert "WARNING" in out
+        assert "WARN" in out
         assert "NTT" in out

@@ -23,7 +23,7 @@ class TestCheckOutliers:
         rows.append(make_simple_row("99", "2025/02/01", "通信費", "普通預金", "500000"))
         check_outliers(rows)
         out = capsys.readouterr().out
-        assert "WARNING" in out
+        assert "WARN" in out
         assert "500,000" in out
 
     def test_skip_accounts_ignored(self, capsys):

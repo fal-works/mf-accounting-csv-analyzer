@@ -63,17 +63,15 @@ def check_consistency(all_rows: list[dict]) -> None:
                     examples = txs[:3]
                     suffix = f" 他{len(txs)-3}件" if len(txs) > 3 else ""
                     print_warning(
-                        f"{side_label}科目の揺れ: 摘要「{summary}」→ "
-                        f"通常「{main_account}」({len(main_txs)}件) だが "
-                        f"「{account}」({len(txs)}件): "
+                        f"{side_label} 摘要「{summary}」: "
+                        f"主={main_account}({len(main_txs)}件) "
+                        f"他={account}({len(txs)}件) "
                         f"{', '.join(examples)}{suffix}"
                     )
                     warnings += 1
 
     if warnings == 0:
-        print_ok("摘要と勘定科目の対応に揺れはありません")
-    else:
-        print_warning(f"{warnings}件の科目の揺れがあります（意図的な場合もあります）")
+        print_ok("科目の揺れなし")
 
 
 def main() -> None:
@@ -86,7 +84,6 @@ def main() -> None:
         all_rows.extend(load_journal(path))
 
     check_consistency(all_rows)
-    print()
 
 
 if __name__ == "__main__":

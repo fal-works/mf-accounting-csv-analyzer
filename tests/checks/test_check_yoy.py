@@ -29,7 +29,7 @@ class TestCheckYoY:
         rows = self._make_two_years(5000, 50000)
         check_yoy(rows)
         out = capsys.readouterr().out
-        assert "WARNING" in out
+        assert "WARN" in out
         assert "通信費" in out
 
     def test_single_year_warns(self, capsys):

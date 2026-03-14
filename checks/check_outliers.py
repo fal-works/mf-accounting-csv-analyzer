@@ -84,17 +84,12 @@ def check_outliers(all_rows: list[dict]) -> None:
             ratio = amount / med
             if ratio >= OUTLIER_THRESHOLD or (ratio > 0 and ratio <= 1 / OUTLIER_THRESHOLD):
                 print_warning(
-                    f"「{account}」で異常な金額: {amount:,}円 "
-                    f"(中央値 {med:,.0f}円 の {ratio:.1f}倍) — {tx_info}"
+                    f"「{account}」{amount:,}円 (中央値{med:,.0f}円の{ratio:.1f}倍) {tx_info}"
                 )
                 warnings += 1
 
     if warnings == 0:
-        print_ok("明らかな異常値は検出されませんでした")
-    else:
-        print_warning(
-            f"{warnings}件の異常値があります（意図的な大口取引の場合もあります）"
-        )
+        print_ok("異常値なし")
 
 
 def print_summary(all_rows: list[dict]) -> None:
@@ -115,8 +110,7 @@ def print_summary(all_rows: list[dict]) -> None:
                 continue
             account_amounts[account].append(amount)
 
-    print(f"  {'科目':<12s} {'件数':>5s} {'合計':>14s} {'平均':>12s} {'中央値':>12s} {'最小':>10s} {'最大':>12s}")
-    print(f"  {'-'*12} {'-'*5} {'-'*14} {'-'*12} {'-'*12} {'-'*10} {'-'*12}")
+    print("科目\t件数\t合計\t平均\t中央値\t最小\t最大")
     for account in sorted(account_amounts.keys()):
         amounts = account_amounts[account]
         n = len(amounts)
@@ -125,7 +119,7 @@ def print_summary(all_rows: list[dict]) -> None:
         med = median(amounts)
         lo = min(amounts)
         hi = max(amounts)
-        print(f"  {account:<12s} {n:>5d} {total:>14,d} {avg:>12,.0f} {med:>12,.0f} {lo:>10,d} {hi:>12,d}")
+        print(f"{account}\t{n}\t{total}\t{avg:.0f}\t{med:.0f}\t{lo}\t{hi}")
 
 
 def main() -> None:
@@ -142,8 +136,6 @@ def main() -> None:
 
     if args.summary:
         print_summary(all_rows)
-
-    print()
 
 
 if __name__ == "__main__":

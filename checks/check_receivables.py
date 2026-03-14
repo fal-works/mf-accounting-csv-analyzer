@@ -71,35 +71,26 @@ def check_receivables(rows: list[dict]) -> None:
         balance = total_increase - total_decrease
 
         if total_increase == 0 and total_decrease == 0:
-            print_ok(f"{account}の取引はありません")
+            print_ok(f"{account}取引なし")
             continue
 
-        print(f"  計上合計: {total_increase:>14,d}円")
-        print(f"  消込合計: {total_decrease:>14,d}円")
-        print(f"  差額残高: {balance:>14,d}円")
+        print(f"計上={total_increase:,} 消込={total_decrease:,} 残高={balance:,}")
 
         # 月別の推移を表示
         all_months = sorted(set(monthly_increase.keys()) | set(monthly_decrease.keys()))
         if all_months:
-            print()
-            print(f"  {'月':>8s} {'計上':>12s} {'消込':>12s} {'累積残高':>12s}")
-            print(f"  {'-'*8} {'-'*12} {'-'*12} {'-'*12}")
+            print("月\t計上\t消込\t累積残高")
             running = 0
             for m in all_months:
                 inc = monthly_increase.get(m, 0)
                 dec = monthly_decrease.get(m, 0)
                 running += inc - dec
-                print(f"  {m:>8s} {inc:>12,d} {dec:>12,d} {running:>12,d}")
+                print(f"{m}\t{inc}\t{dec}\t{running}")
 
-        # 年末残高が期首残高（1月の増加分の一部）と一致しない場合に警告
         if balance < 0:
-            print_warning(
-                f"{account}の消込が計上を上回っています（差額: {balance:,}円）。"
-                "計上漏れの可能性があります"
-            )
+            print_warning(f"{account}消込超過 差額{balance:,}円 計上漏れの可能性")
         elif balance > 0:
-            # 残高がある場合は情報として表示（翌年繰越の可能性がある）
-            print(f"\n  ※ 年末残高 {balance:,}円は翌年度に繰り越されます")
+            print(f"年末残高{balance:,}円→翌年繰越")
 
 
 def main() -> None:
@@ -109,7 +100,6 @@ def main() -> None:
 
     journal = load_journal(args.journal)
     check_receivables(journal)
-    print()
 
 
 if __name__ == "__main__":

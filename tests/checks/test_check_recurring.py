@@ -30,5 +30,5 @@ class TestCheckRecurring:
         rows = self._make_recurring(missing_months={6})
         check_recurring(rows)
         out = capsys.readouterr().out
-        assert "WARNING" in out
+        assert "WARN" in out
         assert "2025/06" in out

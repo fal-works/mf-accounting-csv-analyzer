@@ -58,9 +58,7 @@ def check_duplicate_entries(rows: list[dict]) -> None:
                 warnings += 1
 
     if warnings == 0:
-        print_ok("重複の疑いのある仕訳はありません")
-    else:
-        print_warning(f"{warnings}件の重複の疑いがあります（意図的な場合もあります）")
+        print_ok("重複なし")
 
 
 def main() -> None:
@@ -70,7 +68,6 @@ def main() -> None:
 
     journal = load_journal(args.journal)
     check_duplicate_entries(journal)
-    print()
 
 
 if __name__ == "__main__":

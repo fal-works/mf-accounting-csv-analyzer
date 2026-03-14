@@ -67,9 +67,7 @@ def check_tax_categories(rows: list[dict]) -> int:
                 invalid_count += 1
 
     if invalid_count == 0:
-        print_ok("すべての税区分が有効値です")
-    else:
-        print_warning(f"{invalid_count}件の未知の税区分があります")
+        print_ok("税区分すべて有効")
     errors += invalid_count
 
     # --- チェック2: 科目と税区分の対応チェック ---
@@ -115,9 +113,7 @@ def check_tax_categories(rows: list[dict]) -> int:
                 mismatch_count += 1
 
     if mismatch_count == 0:
-        print_ok("科目と税区分の対応に問題はありません")
-    else:
-        print_warning(f"{mismatch_count}件の不整合があります")
+        print_ok("科目×税区分の整合OK")
     errors += mismatch_count
 
     return errors
@@ -131,12 +127,8 @@ def main() -> None:
     journal = load_journal(args.journal)
     errors = check_tax_categories(journal)
 
-    print()
     if errors > 0:
-        print(f"合計 {errors} 件のエラーが見つかりました。")
         sys.exit(1)
-    else:
-        print("すべてのチェックに合格しました。")
 
 
 if __name__ == "__main__":

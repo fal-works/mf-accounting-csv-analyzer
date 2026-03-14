@@ -42,10 +42,9 @@ def check_monthly_sales(rows: list[dict]) -> None:
 
     missing = sorted(expected_months - months_with_sales)
     if missing:
-        for m in missing:
-            print_warning(f"{m}月に売上高の計上がありません")
+        print_warning(f"売上高の計上なし: {', '.join(missing)}")
     else:
-        print_ok("毎月売上高が計上されています")
+        print_ok("毎月売上計上あり")
 
 
 def main() -> None:
@@ -55,7 +54,6 @@ def main() -> None:
 
     journal = load_journal(args.journal)
     check_monthly_sales(journal)
-    print()
 
 
 if __name__ == "__main__":

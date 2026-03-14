@@ -24,21 +24,19 @@ def load_journal(path: str | Path) -> list[dict[str, str]]:
 
 def print_header(title: str) -> None:
     """チェック結果のヘッダーを出力する。"""
-    print(f"\n{'=' * 60}")
-    print(f"  {title}")
-    print(f"{'=' * 60}")
+    print(f"\n[{title}]")
 
 
 def print_ok(message: str) -> None:
-    print(f"  OK: {message}")
+    print(f"OK: {message}")
 
 
 def print_warning(message: str) -> None:
-    print(f"  WARNING: {message}")
+    print(f"WARN: {message}")
 
 
 def print_error(message: str) -> None:
-    print(f"  ERROR: {message}")
+    print(f"ERR: {message}")
 
 
 def parse_date(value: str) -> date | None:

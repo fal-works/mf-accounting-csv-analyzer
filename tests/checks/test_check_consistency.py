@@ -24,5 +24,5 @@ class TestCheckConsistency:
         ]
         check_consistency(rows)
         out = capsys.readouterr().out
-        assert "WARNING" in out
+        assert "WARN" in out
         assert "電話代" in out

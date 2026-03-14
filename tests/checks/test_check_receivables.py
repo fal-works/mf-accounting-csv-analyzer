@@ -26,7 +26,7 @@ class TestCheckReceivables:
         ]
         check_receivables(rows)
         out = capsys.readouterr().out
-        assert "繰り越" in out
+        assert "翌年繰越" in out
 
     def test_no_transactions(self, capsys):
         """売掛金・未払金の取引がなければ OK。"""

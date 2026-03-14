@@ -109,18 +109,14 @@ def check_yoy(all_rows: list[dict]) -> None:
                     warnings += 1
 
     if warnings == 0:
-        print_ok("年度間で大幅な変動はありません")
-    else:
-        print_warning(f"{warnings}件の大幅変動があります（事業変化による場合もあります）")
+        print_ok("大幅変動なし")
 
     # --- 年度別集計表 ---
     print_header("年度別 勘定科目合計")
-    header = f"  {'科目':<14s}" + "".join(f" {y:>12d}" for y in years)
-    print(header)
-    print(f"  {'-'*14}" + "".join(f" {'-'*12}" for _ in years))
+    print("科目\t" + "\t".join(str(y) for y in years))
     for account in all_accounts:
-        vals = "".join(f" {yearly[y].get(account, 0):>12,d}" for y in years)
-        print(f"  {account:<14s}{vals}")
+        vals = "\t".join(str(yearly[y].get(account, 0)) for y in years)
+        print(f"{account}\t{vals}")
 
 
 def main() -> None:
@@ -133,7 +129,6 @@ def main() -> None:
         all_rows.extend(load_journal(path))
 
     check_yoy(all_rows)
-    print()
 
 
 if __name__ == "__main__":

@@ -32,4 +32,4 @@ class TestCheckDates:
         out = capsys.readouterr().out
         assert "2025/03" in out
         assert "2025/07" in out
-        assert "WARNING" in out
+        assert "WARN" in out

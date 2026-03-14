@@ -40,8 +40,8 @@ def check_vendor_consistency(all_rows: list[dict]) -> None:
             continue
 
         tx_info = (
-            f"No.{row['取引No']} ({row['取引日']}) "
-            f"{account} {row['借方金額(円)']}円 摘要: {row['摘要'].strip() or '(摘要なし)'}"
+            f"No.{row['取引No']}({row['取引日']}) "
+            f"{account} {row['借方金額(円)']}円 {row['摘要'].strip()}"
         )
         vendor_patterns[vendor][(account, tax)].append(tx_info)
 
@@ -63,17 +63,15 @@ def check_vendor_consistency(all_rows: list[dict]) -> None:
                 examples = txs[:3]
                 suffix = f" 他{len(txs)-3}件" if len(txs) > 3 else ""
                 print_warning(
-                    f"取引先「{vendor}」: 通常「{main_account} / {main_tax}」"
-                    f"({len(main_txs)}件) だが "
-                    f"「{account} / {tax}」({len(txs)}件): "
+                    f"取引先「{vendor}」: "
+                    f"主={main_account}/{main_tax}({len(main_txs)}件) "
+                    f"他={account}/{tax}({len(txs)}件) "
                     f"{', '.join(examples)}{suffix}"
                 )
                 warnings += 1
 
     if warnings == 0:
-        print_ok("取引先ごとの科目・税区分の揺れはありません")
-    else:
-        print_warning(f"{warnings}件の揺れがあります（摘要差分やサービス別の可能性もあります）")
+        print_ok("取引先×科目の揺れなし")
 
 
 def main() -> None:
@@ -86,7 +84,6 @@ def main() -> None:
         all_rows.extend(load_journal(path))
 
     check_vendor_consistency(all_rows)
-    print()
 
 
 if __name__ == "__main__":

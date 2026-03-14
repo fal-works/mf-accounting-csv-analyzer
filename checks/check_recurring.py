@@ -79,20 +79,17 @@ def check_recurring(rows: list[dict]) -> None:
         found_any = True
         missing = sorted(expected_months - months)
         if missing:
-            sub_label = f"（{sub}）" if sub else ""
-            for m in missing:
-                print_warning(
-                    f"「{account}{sub_label}」が{m}月に計上なし "
-                    f"（年間{len(covered)}/{len(expected_months)}ヶ月計上あり）"
-                )
-                warnings += 1
+            sub_label = f"({sub})" if sub else ""
+            print_warning(
+                f"「{account}{sub_label}」欠落: {', '.join(missing)} "
+                f"({len(covered)}/12月計上)"
+            )
+            warnings += 1
 
     if not found_any:
-        print_ok("毎月計上される経費パターンは検出されませんでした")
+        print_ok("定期経費パターンなし")
     elif warnings == 0:
-        print_ok("定期経費はすべて毎月計上されています")
-    else:
-        print_warning(f"{warnings}件の欠落があります（季節変動や契約変更の場合もあります）")
+        print_ok("定期経費の欠落なし")
 
 
 def main() -> None:
@@ -102,7 +99,6 @@ def main() -> None:
 
     journal = load_journal(args.journal)
     check_recurring(journal)
-    print()
 
 
 if __name__ == "__main__":
