@@ -101,10 +101,7 @@ def main() -> None:
         print(f"エラー: {e}", file=sys.stderr)
         sys.exit(1)
 
-    result = check_recurring(journal)
-
-    if result.warnings > 0:
-        sys.exit(1)
+    check_recurring(journal)
 
 
 if __name__ == "__main__":

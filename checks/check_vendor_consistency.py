@@ -89,10 +89,7 @@ def main() -> None:
         print(f"エラー: {e}", file=sys.stderr)
         sys.exit(1)
 
-    result = check_vendor_consistency(all_rows)
-
-    if result.warnings > 0:
-        sys.exit(1)
+    check_vendor_consistency(all_rows)
 
 
 if __name__ == "__main__":

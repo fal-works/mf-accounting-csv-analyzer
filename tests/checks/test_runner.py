@@ -1,6 +1,11 @@
 """runner.py のテスト。"""
 
-from checks.runner import discover_checks, run_all
+import sys
+
+import pytest
+
+from checks.common import CheckResult, DataFileError
+from checks.runner import discover_checks, main, run_all
 
 import csv
 import tempfile
@@ -65,3 +70,39 @@ class TestRunAll:
         results = run_all([str(tmp)], skip={"check_tax"})
         assert "check_tax" in results
         assert results["check_tax"].skipped is True
+
+
+class TestMain:
+    def test_returns_zero_when_warnings_exist(self, monkeypatch, capsys):
+        monkeypatch.setattr("checks.runner.run_all", lambda *args, **kwargs: {
+            "check_tax": CheckResult(2),
+        })
+        monkeypatch.setattr(sys, "argv", ["runner.py", "dummy.csv"])
+
+        main()
+
+        out = capsys.readouterr().out
+        assert "警告合計: 2件" in out
+
+    def test_exits_one_on_data_file_error(self, monkeypatch):
+        def raise_data_error(*args, **kwargs):
+            raise DataFileError("broken")
+
+        monkeypatch.setattr("checks.runner.run_all", raise_data_error)
+        monkeypatch.setattr(sys, "argv", ["runner.py", "dummy.csv"])
+
+        with pytest.raises(SystemExit) as excinfo:
+            main()
+
+        assert excinfo.value.code == 1
+
+    def test_list_exits_zero(self, monkeypatch):
+        monkeypatch.setattr("checks.runner.discover_checks", lambda: [
+            ("check_tax", lambda _rows: CheckResult(0), False),
+        ])
+        monkeypatch.setattr(sys, "argv", ["runner.py", "--list"])
+
+        with pytest.raises(SystemExit) as excinfo:
+            main()
+
+        assert excinfo.value.code == 0

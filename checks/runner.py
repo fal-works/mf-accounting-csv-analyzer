@@ -150,10 +150,6 @@ def main() -> None:
 
     print_summary(results)
 
-    total_warnings = sum(r.warnings for r in results.values())
-    if total_warnings > 0:
-        sys.exit(1)
-
 
 if __name__ == "__main__":
     main()

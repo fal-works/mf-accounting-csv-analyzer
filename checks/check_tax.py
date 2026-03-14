@@ -113,10 +113,7 @@ def main() -> None:
         print(f"エラー: {e}", file=sys.stderr)
         sys.exit(1)
 
-    result = check_tax_categories(journal)
-
-    if result.warnings > 0:
-        sys.exit(1)
+    check_tax_categories(journal)
 
 
 if __name__ == "__main__":
