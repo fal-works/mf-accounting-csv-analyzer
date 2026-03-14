@@ -30,13 +30,15 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from common import load_journal, month_key, parse_amount, parse_date, print_header, print_ok, print_warning
 
 
-def check_receivables(rows: list[dict]) -> None:
+def check_receivables(rows: list[dict]) -> int:
     """売掛金・未払金の消込状況をチェックする。"""
 
     targets = {
         "売掛金": {"increase_side": "借方", "decrease_side": "貸方"},
         "未払金": {"increase_side": "貸方", "decrease_side": "借方"},
     }
+
+    warnings = 0
 
     for account, config in targets.items():
         print_header(f"{account} 滞留チェック")
@@ -89,8 +91,11 @@ def check_receivables(rows: list[dict]) -> None:
 
         if balance < 0:
             print_warning(f"{account}消込超過 差額{balance:,}円 計上漏れの可能性")
+            warnings += 1
         elif balance > 0:
             print(f"年末残高{balance:,}円→翌年繰越")
+
+    return warnings
 
 
 def main() -> None:
@@ -99,7 +104,10 @@ def main() -> None:
     args = parser.parse_args()
 
     journal = load_journal(args.journal)
-    check_receivables(journal)
+    warnings = check_receivables(journal)
+
+    if warnings > 0:
+        sys.exit(1)
 
 
 if __name__ == "__main__":

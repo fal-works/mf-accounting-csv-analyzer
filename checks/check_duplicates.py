@@ -18,7 +18,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from common import load_journal, print_header, print_ok, print_warning
 
 
-def check_duplicate_entries(rows: list[dict]) -> None:
+def check_duplicate_entries(rows: list[dict]) -> int:
     """同一内容の仕訳が重複していないかチェックする。"""
     print_header("重複仕訳チェック")
 
@@ -60,6 +60,8 @@ def check_duplicate_entries(rows: list[dict]) -> None:
     if warnings == 0:
         print_ok("重複なし")
 
+    return warnings
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="仕訳帳の重複仕訳チェック")
@@ -67,7 +69,10 @@ def main() -> None:
     args = parser.parse_args()
 
     journal = load_journal(args.journal)
-    check_duplicate_entries(journal)
+    warnings = check_duplicate_entries(journal)
+
+    if warnings > 0:
+        sys.exit(1)
 
 
 if __name__ == "__main__":

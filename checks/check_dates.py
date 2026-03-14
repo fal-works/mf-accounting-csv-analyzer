@@ -17,7 +17,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from common import load_journal, month_key, parse_date, print_header, print_ok, print_warning
 
 
-def check_monthly_sales(rows: list[dict]) -> None:
+def check_monthly_sales(rows: list[dict]) -> int:
     """月次の売上計上チェック。売上高がない月を警告する。"""
     print_header("月次売上計上チェック")
 
@@ -43,8 +43,10 @@ def check_monthly_sales(rows: list[dict]) -> None:
     missing = sorted(expected_months - months_with_sales)
     if missing:
         print_warning(f"売上高の計上なし: {', '.join(missing)}")
+        return 1
     else:
         print_ok("毎月売上計上あり")
+        return 0
 
 
 def main() -> None:
@@ -53,7 +55,10 @@ def main() -> None:
     args = parser.parse_args()
 
     journal = load_journal(args.journal)
-    check_monthly_sales(journal)
+    warnings = check_monthly_sales(journal)
+
+    if warnings > 0:
+        sys.exit(1)
 
 
 if __name__ == "__main__":

@@ -22,7 +22,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from common import SKIP_ACCOUNTS_COMMON, load_journal, print_header, print_ok, print_warning
 
 
-def check_vendor_consistency(all_rows: list[dict]) -> None:
+def check_vendor_consistency(all_rows: list[dict]) -> int:
     """借方取引先ごとの科目・税区分の一貫性をチェックする。"""
     print_header("取引先×勘定科目 一貫性チェック")
 
@@ -73,6 +73,8 @@ def check_vendor_consistency(all_rows: list[dict]) -> None:
     if warnings == 0:
         print_ok("取引先×科目の揺れなし")
 
+    return warnings
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="取引先ごとの勘定科目・税区分の一貫性チェック")
@@ -83,7 +85,10 @@ def main() -> None:
     for path in args.journals:
         all_rows.extend(load_journal(path))
 
-    check_vendor_consistency(all_rows)
+    warnings = check_vendor_consistency(all_rows)
+
+    if warnings > 0:
+        sys.exit(1)
 
 
 if __name__ == "__main__":

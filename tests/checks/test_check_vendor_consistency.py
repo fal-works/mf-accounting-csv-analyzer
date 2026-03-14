@@ -16,9 +16,10 @@ class TestCheckVendorConsistency:
                 debit_vendor="NTT", debit_tax="課税仕入 10%",
             ),
         ]
-        check_vendor_consistency(rows)
+        result = check_vendor_consistency(rows)
         out = capsys.readouterr().out
         assert "OK" in out
+        assert result == 0
 
     def test_inconsistent(self, capsys):
         rows = [
@@ -39,7 +40,8 @@ class TestCheckVendorConsistency:
                 debit_vendor="NTT", debit_tax="課税仕入 10%",
             ),
         ]
-        check_vendor_consistency(rows)
+        result = check_vendor_consistency(rows)
         out = capsys.readouterr().out
         assert "WARN" in out
         assert "NTT" in out
+        assert result > 0

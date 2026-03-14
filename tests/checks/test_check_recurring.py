@@ -22,13 +22,15 @@ class TestCheckRecurring:
 
     def test_all_months_present(self, capsys):
         rows = self._make_recurring()
-        check_recurring(rows)
+        result = check_recurring(rows)
         out = capsys.readouterr().out
         assert "OK" in out or "毎月計上" in out
+        assert result == 0
 
     def test_missing_month(self, capsys):
         rows = self._make_recurring(missing_months={6})
-        check_recurring(rows)
+        result = check_recurring(rows)
         out = capsys.readouterr().out
         assert "WARN" in out
         assert "2025/06" in out
+        assert result > 0

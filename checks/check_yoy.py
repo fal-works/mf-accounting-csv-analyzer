@@ -29,7 +29,7 @@ CHANGE_THRESHOLD = 2.0
 MIN_CHANGE_AMOUNT = 10000
 
 
-def check_yoy(all_rows: list[dict]) -> None:
+def check_yoy(all_rows: list[dict]) -> int:
     """年度間の勘定科目別合計を比較する。"""
 
     # 年度 × 科目 → 合計金額を集計
@@ -57,7 +57,7 @@ def check_yoy(all_rows: list[dict]) -> None:
     if len(years) < 2:
         print_header("年度間比較チェック")
         print_warning("比較には最低2年度分のデータが必要です")
-        return
+        return 0
 
     # --- 変動チェック ---
     print_header("年度間 大幅変動チェック")
@@ -111,12 +111,16 @@ def check_yoy(all_rows: list[dict]) -> None:
     if warnings == 0:
         print_ok("大幅変動なし")
 
+    result = warnings
+
     # --- 年度別集計表 ---
     print_header("年度別 勘定科目合計")
     print("科目\t" + "\t".join(str(y) for y in years))
     for account in all_accounts:
         vals = "\t".join(str(yearly[y].get(account, 0)) for y in years)
         print(f"{account}\t{vals}")
+
+    return result
 
 
 def main() -> None:
@@ -128,7 +132,10 @@ def main() -> None:
     for path in args.journals:
         all_rows.extend(load_journal(path))
 
-    check_yoy(all_rows)
+    warnings = check_yoy(all_rows)
+
+    if warnings > 0:
+        sys.exit(1)
 
 
 if __name__ == "__main__":

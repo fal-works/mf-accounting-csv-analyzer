@@ -42,7 +42,7 @@ def median(values: list[int]) -> float:
     return (s[n // 2 - 1] + s[n // 2]) / 2
 
 
-def check_outliers(all_rows: list[dict]) -> None:
+def check_outliers(all_rows: list[dict]) -> int:
     """勘定科目ごとの金額の外れ値を検出する。"""
     print_header("金額の異常値チェック")
 
@@ -91,6 +91,8 @@ def check_outliers(all_rows: list[dict]) -> None:
     if warnings == 0:
         print_ok("異常値なし")
 
+    return warnings
+
 
 def print_summary(all_rows: list[dict]) -> None:
     """勘定科目ごとの金額サマリーをCSV形式で標準出力に出力する。"""
@@ -132,10 +134,13 @@ def main() -> None:
     for path in args.journals:
         all_rows.extend(load_journal(path))
 
-    check_outliers(all_rows)
+    warnings = check_outliers(all_rows)
 
     if args.summary:
         print_summary(all_rows)
+
+    if warnings > 0:
+        sys.exit(1)
 
 
 if __name__ == "__main__":

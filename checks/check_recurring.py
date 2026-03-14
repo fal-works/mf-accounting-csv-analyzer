@@ -31,7 +31,7 @@ MONTHLY_THRESHOLD = 10
 SKIP_ACCOUNTS = SKIP_ACCOUNTS_COMMON | {"売上高"}
 
 
-def check_recurring(rows: list[dict]) -> None:
+def check_recurring(rows: list[dict]) -> int:
     """定期的な経費の欠落をチェックする。"""
     print_header("定期経費 欠落チェック")
 
@@ -59,7 +59,7 @@ def check_recurring(rows: list[dict]) -> None:
 
     if not all_months:
         print_warning("データがありません")
-        return
+        return 0
 
     # 年度を特定（データ中の最頻年）
     year = int(min(all_months).split("/")[0])
@@ -91,6 +91,8 @@ def check_recurring(rows: list[dict]) -> None:
     elif warnings == 0:
         print_ok("定期経費の欠落なし")
 
+    return warnings
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="定期経費の欠落チェック")
@@ -98,7 +100,10 @@ def main() -> None:
     args = parser.parse_args()
 
     journal = load_journal(args.journal)
-    check_recurring(journal)
+    warnings = check_recurring(journal)
+
+    if warnings > 0:
+        sys.exit(1)
 
 
 if __name__ == "__main__":

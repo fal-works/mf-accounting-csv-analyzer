@@ -21,22 +21,25 @@ class TestCheckYoY:
 
     def test_no_change(self, capsys):
         rows = self._make_two_years(5000, 5000)
-        check_yoy(rows)
+        result = check_yoy(rows)
         out = capsys.readouterr().out
         assert "OK" in out
+        assert result == 0
 
     def test_large_change(self, capsys):
         rows = self._make_two_years(5000, 50000)
-        check_yoy(rows)
+        result = check_yoy(rows)
         out = capsys.readouterr().out
         assert "WARN" in out
         assert "通信費" in out
+        assert result > 0
 
     def test_single_year_warns(self, capsys):
         """1年分だけではデータ不足の警告。"""
         rows = [
             make_simple_row("1", "2025/01/15", "通信費", "普通預金", "5000"),
         ]
-        check_yoy(rows)
+        result = check_yoy(rows)
         out = capsys.readouterr().out
         assert "最低2年度" in out
+        assert result == 0

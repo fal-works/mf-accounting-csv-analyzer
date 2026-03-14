@@ -23,7 +23,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from common import load_journal, print_header, print_ok, print_warning
 
 
-def check_consistency(all_rows: list[dict]) -> None:
+def check_consistency(all_rows: list[dict]) -> int:
     """摘要と勘定科目の組み合わせの一貫性をチェックする。"""
     print_header("勘定科目×摘要 一貫性チェック")
 
@@ -73,6 +73,8 @@ def check_consistency(all_rows: list[dict]) -> None:
     if warnings == 0:
         print_ok("科目の揺れなし")
 
+    return warnings
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="勘定科目と摘要の一貫性チェック")
@@ -83,7 +85,10 @@ def main() -> None:
     for path in args.journals:
         all_rows.extend(load_journal(path))
 
-    check_consistency(all_rows)
+    warnings = check_consistency(all_rows)
+
+    if warnings > 0:
+        sys.exit(1)
 
 
 if __name__ == "__main__":
