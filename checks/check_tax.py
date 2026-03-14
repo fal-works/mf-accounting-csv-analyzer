@@ -48,7 +48,7 @@ EXPENSE_ACCOUNTS = {
 
 def check_tax_categories(rows: list[dict]) -> int:
     """税区分の妥当性をチェックする。"""
-    errors = 0
+    warnings = 0
 
     # --- チェック1: 有効な税区分かどうか ---
     print_header("税区分の有効値チェック")
@@ -65,7 +65,7 @@ def check_tax_categories(rows: list[dict]) -> int:
 
     if invalid_count == 0:
         print_ok("税区分すべて有効")
-    errors += invalid_count
+    warnings += invalid_count
 
     # --- チェック2: 科目と税区分の対応チェック ---
     print_header("科目と税区分の整合性チェック")
@@ -111,9 +111,9 @@ def check_tax_categories(rows: list[dict]) -> int:
 
     if mismatch_count == 0:
         print_ok("科目×税区分の整合OK")
-    errors += mismatch_count
+    warnings += mismatch_count
 
-    return errors
+    return warnings
 
 
 def main() -> None:
@@ -122,9 +122,9 @@ def main() -> None:
     args = parser.parse_args()
 
     journal = load_journal(args.journal)
-    errors = check_tax_categories(journal)
+    warnings = check_tax_categories(journal)
 
-    if errors > 0:
+    if warnings > 0:
         sys.exit(1)
 
 

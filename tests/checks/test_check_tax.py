@@ -16,8 +16,8 @@ class TestCheckTax:
                 debit_tax="対象外", credit_tax="課税売上 10% 五種",
             ),
         ]
-        errors = check_tax_categories(rows)
-        assert errors == 0
+        warnings = check_tax_categories(rows)
+        assert warnings == 0
 
     def test_invalid_tax_category(self, capsys):
         rows = [
@@ -26,8 +26,8 @@ class TestCheckTax:
                 debit_tax="不明な区分", credit_tax="対象外",
             ),
         ]
-        errors = check_tax_categories(rows)
-        assert errors > 0
+        warnings = check_tax_categories(rows)
+        assert warnings > 0
         out = capsys.readouterr().out
         assert "不明な区分" in out
 
@@ -39,5 +39,5 @@ class TestCheckTax:
                 debit_tax="課税仕入 10%", credit_tax="対象外",
             ),
         ]
-        errors = check_tax_categories(rows)
-        assert errors > 0
+        warnings = check_tax_categories(rows)
+        assert warnings > 0
