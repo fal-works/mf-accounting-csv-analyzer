@@ -3,7 +3,7 @@
 import json
 from pathlib import Path
 
-from checks.journal_columns import (
+from analysis.journal_columns import (
     CREDIT_SIDE,
     CREDIT_ACCOUNT,
     CREDIT_AMOUNT,
@@ -28,7 +28,7 @@ from checks.journal_columns import (
 
 def test_public_constants_match_schema_columns() -> None:
     schema = json.loads(
-        (Path(__file__).resolve().parents[2] / "schema" / "journal.json").read_text(
+        (Path(__file__).resolve().parents[1] / "schema" / "journal.json").read_text(
             encoding="utf-8"
         )
     )

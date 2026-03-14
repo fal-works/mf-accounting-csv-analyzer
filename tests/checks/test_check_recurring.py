@@ -1,6 +1,6 @@
 """check_recurring.py のテスト。"""
 
-from checks.check_recurring import check_recurring
+from analysis.checks.check_recurring import check_recurring
 from conftest import make_simple_row
 
 

@@ -1,6 +1,6 @@
-"""checks/ テスト共通のフィクスチャとヘルパー。"""
+"""analysis.checks テスト共通のフィクスチャとヘルパー。"""
 
-from checks.journal_columns import (
+from analysis.journal_columns import (
     CREDIT_ACCOUNT,
     CREDIT_AMOUNT,
     CREDIT_SUBACCOUNT,

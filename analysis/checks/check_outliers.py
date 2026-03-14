@@ -17,8 +17,8 @@ import argparse
 import sys
 from collections import defaultdict
 
-from checks.common import SKIP_ACCOUNTS_COMMON, CheckResult, DataFileError, load_journal, parse_amount, print_header, print_ok, print_warning
-from checks.journal_columns import SIDES, TX_DATE, TX_NO
+from analysis.common import SKIP_ACCOUNTS_COMMON, CheckResult, DataFileError, load_journal, parse_amount, print_header, print_ok, print_warning
+from analysis.journal_columns import SIDES, TX_DATE, TX_NO
 
 MULTI_YEAR = True
 

@@ -8,8 +8,8 @@
   1. 売上高の計上がない月がないか（入力忘れの検出）
 """
 
-from checks.common import CheckResult, month_key, parse_date, print_header, print_ok, print_warning, run_check_cli
-from checks.journal_columns import CREDIT_ACCOUNT, TX_DATE
+from analysis.common import CheckResult, month_key, parse_date, print_header, print_ok, print_warning, run_check_cli
+from analysis.journal_columns import CREDIT_ACCOUNT, TX_DATE
 
 MULTI_YEAR = False
 

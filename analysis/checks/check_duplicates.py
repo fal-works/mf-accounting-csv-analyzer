@@ -10,8 +10,8 @@
 
 from collections import defaultdict
 
-from checks.common import CheckResult, print_header, print_ok, print_warning, run_check_cli
-from checks.journal_columns import (
+from analysis.common import CheckResult, print_header, print_ok, print_warning, run_check_cli
+from analysis.journal_columns import (
     CREDIT_ACCOUNT,
     CREDIT_AMOUNT,
     CREDIT_SUBACCOUNT,

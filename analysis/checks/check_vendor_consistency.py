@@ -14,8 +14,8 @@
 
 from collections import defaultdict
 
-from checks.common import SKIP_ACCOUNTS_COMMON, CheckResult, print_header, print_ok, print_warning, run_check_cli
-from checks.journal_columns import DEBIT_ACCOUNT, DEBIT_AMOUNT, DEBIT_TAX, DEBIT_VENDOR, SUMMARY, TX_DATE, TX_NO
+from analysis.common import SKIP_ACCOUNTS_COMMON, CheckResult, print_header, print_ok, print_warning, run_check_cli
+from analysis.journal_columns import DEBIT_ACCOUNT, DEBIT_AMOUNT, DEBIT_TAX, DEBIT_VENDOR, SUMMARY, TX_DATE, TX_NO
 
 MULTI_YEAR = True
 

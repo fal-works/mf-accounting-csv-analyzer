@@ -4,14 +4,14 @@ import sys
 
 import pytest
 
-from checks.common import CheckResult, DataFileError
-from checks.runner import discover_checks, main, run_all
+from analysis.common import CheckResult, DataFileError
+from analysis.checks.runner import discover_checks, main, run_all
 
 import csv
 import tempfile
 from pathlib import Path
 
-from checks.journal_columns import JOURNAL_COLUMNS
+from analysis.journal_columns import JOURNAL_COLUMNS
 from conftest import make_simple_row
 
 
@@ -74,7 +74,7 @@ class TestRunAll:
 
 class TestMain:
     def test_returns_zero_when_warnings_exist(self, monkeypatch, capsys):
-        monkeypatch.setattr("checks.runner.run_all", lambda *args, **kwargs: {
+        monkeypatch.setattr("analysis.checks.runner.run_all", lambda *args, **kwargs: {
             "check_tax": CheckResult(2),
         })
         monkeypatch.setattr(sys, "argv", ["runner.py", "dummy.csv"])
@@ -88,7 +88,7 @@ class TestMain:
         def raise_data_error(*args, **kwargs):
             raise DataFileError("broken")
 
-        monkeypatch.setattr("checks.runner.run_all", raise_data_error)
+        monkeypatch.setattr("analysis.checks.runner.run_all", raise_data_error)
         monkeypatch.setattr(sys, "argv", ["runner.py", "dummy.csv"])
 
         with pytest.raises(SystemExit) as excinfo:
@@ -97,7 +97,7 @@ class TestMain:
         assert excinfo.value.code == 1
 
     def test_list_exits_zero(self, monkeypatch):
-        monkeypatch.setattr("checks.runner.discover_checks", lambda: [
+        monkeypatch.setattr("analysis.checks.runner.discover_checks", lambda: [
             ("check_tax", lambda _rows: CheckResult(0), False),
         ])
         monkeypatch.setattr(sys, "argv", ["runner.py", "--list"])

@@ -11,7 +11,7 @@
   4. 借方と貸方で税区分の組み合わせが矛盾していないか
 """
 
-from checks.common import (
+from analysis.common import (
     SKIP_ACCOUNTS_COMMON,
     CheckResult,
     print_error,
@@ -20,7 +20,7 @@ from checks.common import (
     print_warning,
     run_check_cli,
 )
-from checks.journal_columns import SIDES, TX_DATE, TX_NO
+from analysis.journal_columns import SIDES, TX_DATE, TX_NO
 
 MULTI_YEAR = False
 

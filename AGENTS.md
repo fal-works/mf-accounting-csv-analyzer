@@ -18,7 +18,7 @@
 ### 基本フロー
 
 1. `data/memo.md` および `data/{年度}/memo.md` で既知情報を確認
-2. `uv run python -m checks.runner data/*/仕訳帳.csv` で全チェック実行
+2. `uv run python -m analysis.checks.runner data/*/仕訳帳.csv` で全チェック実行
 3. 警告を偽陽性と要確認に分類
 4. 要確認の取引を `rg` で元データと照合
 5. 発見事項・偽陽性をメモに記録
@@ -34,9 +34,9 @@
   すべてを機械的に処理する必要はない。
 - 即興スクリプト（その場限りの集計・調査用）は、ファイルに保存せず
   `uv run python -c "..."` でインライン実行するのを基本とする。
-  `checks.common`（`load_journal`, `parse_amount`, `parse_date` 等）や
-  `checks.journal_columns`（カラム名定数）を import して活用できる。
-- 同種の即興スクリプトが頻出したら `checks/` に `tmp_` プレフィックス付きで一時保存する。
+  `analysis.common`（`load_journal`, `parse_amount`, `parse_date` 等）や
+  `analysis.journal_columns`（カラム名定数）を import して活用できる。
+- 同種の即興スクリプトが頻出したら `tmp_` プレフィックス付きで一時保存する。
   このプレフィックスならスクリプトランナーには拾われないので、実装は自由でよい。
   使用後はユーザーと相談し、不要なら削除、有用なら正式化を検討する。
 - `data/{年度}/` 以下に、分析目的の中間集計データなどを保存してもよい。
@@ -45,16 +45,16 @@
 ## CSV スキーマ定義
 
 対応するCSV種別のスキーマ（カラム名、保存ファイル名、日付カラム）は `schema/` にJSONで定義されている。
-Python（`checks/*.py`）と GUI（`gui/**/*.ts`）の両方がこのJSONを正本として参照する。
+Python（`analysis/**/*.py`）と GUI（`gui/**/*.ts`）の両方がこのJSONを正本として参照する。
 
 詳細は [schema/README.md](schema/README.md) を参照。
 
 ## チェックスクリプトの開発
 
-- 有用なスクリプトは再利用可能な形で `checks/` に追加する。既存スクリプトを改善してもよい。
+- 有用なスクリプトは再利用可能な形で `analysis/checks/` に追加する。既存スクリプトを改善してもよい。
 - スクリプトを新規作成・変更した場合は、対応するテストを `tests/checks/` に追加・更新すること。
-- `checks/` のスクリプトの各関数は `CheckResult`（`warnings: int`, `skipped: bool`, `reason: str`）を返す。テストでは出力内容だけでなく戻り値も検証する。
-- 追加手順・構成の詳細は [checks/README.md](checks/README.md) を参照。
+- `analysis/checks/` のスクリプトの各関数は `CheckResult`（`warnings: int`, `skipped: bool`, `reason: str`）を返す。テストでは出力内容だけでなく戻り値も検証する。
+- 追加手順・構成の詳細は [analysis/checks/README.md](analysis/checks/README.md) を参照。
 
 ## コマンド体系
 

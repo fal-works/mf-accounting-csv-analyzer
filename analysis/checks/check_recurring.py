@@ -17,8 +17,8 @@
 
 from collections import defaultdict
 
-from checks.common import SKIP_ACCOUNTS_COMMON, CheckResult, month_key, parse_date, print_header, print_ok, print_warning, run_check_cli
-from checks.journal_columns import SIDES, TX_DATE
+from analysis.common import SKIP_ACCOUNTS_COMMON, CheckResult, month_key, parse_date, print_header, print_ok, print_warning, run_check_cli
+from analysis.journal_columns import SIDES, TX_DATE
 
 MULTI_YEAR = False
 

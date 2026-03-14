@@ -4,23 +4,23 @@ from importlib import import_module
 
 import pytest
 
-from checks.common import CheckResult, DataFileError
+from analysis.common import CheckResult, DataFileError
 
-# run_check_cli 経由の標準スクリプト — checks.common.load_journal だけ patch すればよい
+# run_check_cli 経由の標準スクリプト — analysis.common.load_journal だけ patch すればよい
 STANDARD_CLI_CASES = [
-    ("checks.check_consistency", "check_consistency", ["dummy.csv"]),
-    ("checks.check_dates", "check_monthly_sales", ["dummy.csv"]),
-    ("checks.check_duplicates", "check_duplicate_entries", ["dummy.csv"]),
-    ("checks.check_receivables", "check_receivables", ["dummy.csv"]),
-    ("checks.check_recurring", "check_recurring", ["dummy.csv"]),
-    ("checks.check_tax", "check_tax_categories", ["dummy.csv"]),
-    ("checks.check_vendor_consistency", "check_vendor_consistency", ["dummy.csv"]),
-    ("checks.check_yoy", "check_yoy", ["dummy.csv"]),
+    ("analysis.checks.check_consistency", "check_consistency", ["dummy.csv"]),
+    ("analysis.checks.check_dates", "check_monthly_sales", ["dummy.csv"]),
+    ("analysis.checks.check_duplicates", "check_duplicate_entries", ["dummy.csv"]),
+    ("analysis.checks.check_receivables", "check_receivables", ["dummy.csv"]),
+    ("analysis.checks.check_recurring", "check_recurring", ["dummy.csv"]),
+    ("analysis.checks.check_tax", "check_tax_categories", ["dummy.csv"]),
+    ("analysis.checks.check_vendor_consistency", "check_vendor_consistency", ["dummy.csv"]),
+    ("analysis.checks.check_yoy", "check_yoy", ["dummy.csv"]),
 ]
 
 # 独自 main() を持つスクリプト — モジュール側の load_journal も patch が必要
 CUSTOM_MAIN_CASES = [
-    ("checks.check_outliers", "check_outliers", ["dummy.csv"]),
+    ("analysis.checks.check_outliers", "check_outliers", ["dummy.csv"]),
 ]
 
 
@@ -28,7 +28,7 @@ CUSTOM_MAIN_CASES = [
 def test_standard_main_returns_zero_when_warnings_exist(monkeypatch, module_name, check_func_name, argv_tail):
     module = import_module(module_name)
 
-    monkeypatch.setattr("checks.common.load_journal", lambda _path: [])
+    monkeypatch.setattr("analysis.common.load_journal", lambda _path: [])
     monkeypatch.setattr(module, check_func_name, lambda _rows: CheckResult(2))
     monkeypatch.setattr("sys.argv", ["prog", *argv_tail])
 
@@ -42,7 +42,7 @@ def test_standard_main_exits_one_on_data_file_error(monkeypatch, module_name, ch
     def raise_data_error(_path):
         raise DataFileError("broken")
 
-    monkeypatch.setattr("checks.common.load_journal", raise_data_error)
+    monkeypatch.setattr("analysis.common.load_journal", raise_data_error)
     monkeypatch.setattr(module, check_func_name, lambda _rows: CheckResult(0))
     monkeypatch.setattr("sys.argv", ["prog", *argv_tail])
 
@@ -56,7 +56,7 @@ def test_standard_main_exits_one_on_data_file_error(monkeypatch, module_name, ch
 def test_custom_main_returns_zero_when_warnings_exist(monkeypatch, module_name, check_func_name, argv_tail):
     module = import_module(module_name)
 
-    monkeypatch.setattr("checks.common.load_journal", lambda _path: [])
+    monkeypatch.setattr("analysis.common.load_journal", lambda _path: [])
     monkeypatch.setattr(module, "load_journal", lambda _path: [])
     monkeypatch.setattr(module, check_func_name, lambda _rows: CheckResult(2))
     monkeypatch.setattr("sys.argv", ["prog", *argv_tail])
@@ -71,7 +71,7 @@ def test_custom_main_exits_one_on_data_file_error(monkeypatch, module_name, chec
     def raise_data_error(_path):
         raise DataFileError("broken")
 
-    monkeypatch.setattr("checks.common.load_journal", raise_data_error)
+    monkeypatch.setattr("analysis.common.load_journal", raise_data_error)
     monkeypatch.setattr(module, "load_journal", raise_data_error)
     monkeypatch.setattr(module, check_func_name, lambda _rows: CheckResult(0))
     monkeypatch.setattr("sys.argv", ["prog", *argv_tail])

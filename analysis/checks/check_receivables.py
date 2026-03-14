@@ -22,8 +22,8 @@
 
 from collections import defaultdict
 
-from checks.common import CheckResult, month_key, parse_amount, parse_date, print_header, print_ok, print_warning, run_check_cli
-from checks.journal_columns import CREDIT_SIDE, DEBIT_SIDE, TX_DATE
+from analysis.common import CheckResult, month_key, parse_amount, parse_date, print_header, print_ok, print_warning, run_check_cli
+from analysis.journal_columns import CREDIT_SIDE, DEBIT_SIDE, TX_DATE
 
 MULTI_YEAR = False
 

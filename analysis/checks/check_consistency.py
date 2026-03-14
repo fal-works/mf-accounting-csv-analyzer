@@ -15,8 +15,8 @@
 
 from collections import defaultdict
 
-from checks.common import CheckResult, print_header, print_ok, print_warning, run_check_cli
-from checks.journal_columns import SIDES, SUMMARY, TX_DATE, TX_NO
+from analysis.common import CheckResult, print_header, print_ok, print_warning, run_check_cli
+from analysis.journal_columns import SIDES, SUMMARY, TX_DATE, TX_NO
 
 MULTI_YEAR = True
 

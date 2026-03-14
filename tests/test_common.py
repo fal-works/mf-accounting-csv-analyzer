@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from checks.common import (
+from analysis.common import (
     SKIP_ACCOUNTS_COMMON,
     CheckResult,
     DataFileError,
@@ -89,7 +89,7 @@ class TestRunCheckCli:
     def test_single_file_passes_loaded_rows(self, monkeypatch):
         seen = []
 
-        monkeypatch.setattr("checks.common.load_journal", lambda _path: [{"id": "1"}])
+        monkeypatch.setattr("analysis.common.load_journal", lambda _path: [{"id": "1"}])
         monkeypatch.setattr("sys.argv", ["prog", "dummy.csv"])
 
         def fake_check(rows):
@@ -102,7 +102,7 @@ class TestRunCheckCli:
 
     def test_multi_file_combines_rows(self, monkeypatch):
         monkeypatch.setattr(
-            "checks.common.load_journal",
+            "analysis.common.load_journal",
             lambda path: [{"path": Path(path).name}],
         )
         monkeypatch.setattr("sys.argv", ["prog", "a.csv", "b.csv"])

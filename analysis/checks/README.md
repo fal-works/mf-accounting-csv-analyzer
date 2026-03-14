@@ -1,4 +1,4 @@
-# checks/ — 計上ミス検出スクリプト 開発ドキュメント
+# analysis/checks/ — 計上ミス検出スクリプト 開発ドキュメント
 
 スクリプトの一覧と個別の補足説明は [catalog.md](catalog.md)を参照。
 分析手順は [analysis-flow.md](../analysis-flow.md) を参照。
@@ -31,12 +31,12 @@ CLIの終了コードは「正常完了なら 0、データ読み込みエラー
 
 ## カラム定数
 
-`checks/journal_columns.py` が仕訳帳CSVのカラム名定数（`TX_NO`, `DEBIT_ACCOUNT` 等）を提供する。
+`analysis/journal_columns.py` が仕訳帳CSVのカラム名定数（`TX_NO`, `DEBIT_ACCOUNT` 等）を提供する。
 値は `schema/journal.json` から読み込まれる。チェックスクリプトではこの定数を使い、カラム名を直接文字列で書かない。
 
 ## チェックの追加手順
 
-1. `checks/check_<name>.py` を作成し、`MULTI_YEAR` を定義
+1. `analysis/checks/check_<name>.py` を作成し、`MULTI_YEAR` を定義
 2. `check_<name>(rows) -> CheckResult` を実装
 3. `tests/checks/test_check_<name>.py` にテストを追加
 4. [catalog.md](catalog.md) にスクリプト一覧・偽陽性ガイドを追記

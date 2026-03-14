@@ -2,7 +2,7 @@
 """チェックスクリプトの自動検出・一括実行ランナー。
 
 使い方:
-    uv run python -m checks.runner <仕訳帳.csv> [<仕訳帳.csv> ...]
+    uv run python -m analysis.checks.runner <仕訳帳.csv> [<仕訳帳.csv> ...]
 
 オプション:
     --only NAME[,NAME]   指定したチェックのみ実行（例: --only check_tax,check_dates）
@@ -10,7 +10,7 @@
     --list               利用可能なチェック一覧を表示して終了
 
 チェックの自動検出:
-  checks/ 以下の check_*.py モジュールを自動検出する。
+  analysis/checks/ 以下の check_*.py モジュールを自動検出する。
   モジュールレベルで ENABLED = False を設定すると自動検出から除外される。
 """
 
@@ -20,12 +20,12 @@ import pkgutil
 import sys
 from typing import Callable
 
-import checks
-from checks.common import CheckResult, DataFileError, load_journal, print_header
+import analysis.checks as checks
+from analysis.common import CheckResult, DataFileError, load_journal, print_header
 
 
 def discover_checks() -> list[tuple[str, Callable, bool]]:
-    """checks/ 以下の check_*.py を検出し、(名前, チェック関数, multi_year) のリストを返す。
+    """analysis.checks 以下の check_*.py を検出し、(名前, チェック関数, multi_year) のリストを返す。
 
     モジュールに ENABLED = False が設定されている場合はスキップする。
     """

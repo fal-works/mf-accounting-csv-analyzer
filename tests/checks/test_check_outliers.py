@@ -1,6 +1,6 @@
 """check_outliers.py のテスト。"""
 
-from checks.check_outliers import check_outliers
+from analysis.checks.check_outliers import check_outliers
 from conftest import make_simple_row
 
 

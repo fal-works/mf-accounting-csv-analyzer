@@ -1,6 +1,6 @@
 """check_consistency.py のテスト。"""
 
-from checks.check_consistency import check_consistency
+from analysis.checks.check_consistency import check_consistency
 from conftest import make_simple_row
 
 

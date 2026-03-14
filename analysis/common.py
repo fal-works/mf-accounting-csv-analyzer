@@ -7,7 +7,7 @@ from datetime import date, datetime
 from pathlib import Path
 from typing import Callable, NamedTuple
 
-from checks.journal_columns import JOURNAL_COLUMNS
+from analysis.journal_columns import JOURNAL_COLUMNS
 
 
 class CheckResult(NamedTuple):
