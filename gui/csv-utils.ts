@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------
 // CSV Type Definitions
 // ---------------------------------------------------------------------------
-// Each entry defines a CSV type: how to identify it and what filename to save as.
+// Each entry defines a CSV type: its formal columns and the filename to save as.
 // To add a new type, just add an entry here.
 
 export interface CsvTypeDef {
@@ -65,18 +65,12 @@ export function isUTF8(bytes: Uint8Array): boolean {
 // ---------------------------------------------------------------------------
 // CSV type identification
 // ---------------------------------------------------------------------------
-export function identifyType(header: string[], fileName: string): CsvTypeDef | null {
+export function identifyType(header: string[]): CsvTypeDef | null {
   const headerSet = new Set(header.map((h) => h.trim()));
 
   for (const t of CSV_TYPES) {
     const matchesAllColumns = t.columns.every((column) => headerSet.has(column));
     if (matchesAllColumns) return t;
-  }
-
-  // Fallback: match by filename
-  for (const t of CSV_TYPES) {
-    const base = t.saveName.replace(".csv", "");
-    if (fileName.includes(base)) return t;
   }
   return null;
 }

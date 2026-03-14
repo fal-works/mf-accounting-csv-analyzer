@@ -90,7 +90,7 @@ async function processFile(file: File): Promise<void> {
   }
 
   // 4. Identify CSV type
-  const csvType = identifyType(header, file.name);
+  const csvType = identifyType(header);
   if (!csvType) {
     log("err", `CSVタイプを判定できません。ヘッダー: ${header.slice(0, 5).join(", ")}...\n`);
     return;

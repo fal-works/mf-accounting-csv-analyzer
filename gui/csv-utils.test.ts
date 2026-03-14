@@ -93,30 +93,23 @@ describe("splitCSVLines", () => {
 describe("identifyType", () => {
   test("identifies 仕訳帳 when all formal columns are present", () => {
     const header = CSV_TYPES[0].columns;
-    const result = identifyType(header, "export.csv");
+    const result = identifyType(header);
     expect(result).not.toBeNull();
     expect(result!.saveName).toBe("仕訳帳.csv");
   });
 
-  test("returns null when formal columns are missing even if filename matches", () => {
+  test("returns null when formal columns are missing", () => {
     const header = CSV_TYPES[0].columns.filter((column) => column !== "メモ");
-    expect(identifyType(header, "export.csv")).toBeNull();
-  });
-
-  test("falls back to filename matching", () => {
-    const header = ["col1", "col2"];
-    const result = identifyType(header, "仕訳帳_2025.csv");
-    expect(result).not.toBeNull();
-    expect(result!.saveName).toBe("仕訳帳.csv");
+    expect(identifyType(header)).toBeNull();
   });
 
   test("returns null when no match", () => {
-    expect(identifyType(["col1", "col2"], "unknown.csv")).toBeNull();
+    expect(identifyType(["col1", "col2"])).toBeNull();
   });
 
   test("trims header values for matching", () => {
     const header = CSV_TYPES[0].columns.map((column) => ` ${column} `);
-    const result = identifyType(header, "x.csv");
+    const result = identifyType(header);
     expect(result).not.toBeNull();
     expect(result!.saveName).toBe("仕訳帳.csv");
   });
