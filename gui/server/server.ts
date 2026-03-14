@@ -6,10 +6,10 @@ import { countDataRows } from "./server-utils.js";
 import type { ImportRequest } from "./server-utils.js";
 
 const PORT = 3456;
-// dist/server.js → gui/dist/, so ../.. = repo root
-const REPO_ROOT = path.resolve(import.meta.dirname, "../..");
+// dist/server/server.js → gui/dist/server/, so ../../.. = repo root
+const REPO_ROOT = path.resolve(import.meta.dirname, "../../..");
 const DATA_DIR = path.join(REPO_ROOT, "data");
-const STATIC_DIR = path.join(REPO_ROOT, "gui/dist/browser");
+const STATIC_DIR = path.join(REPO_ROOT, "gui/dist/client");
 
 const MIME: Record<string, string> = {
   ".html": "text/html; charset=utf-8",

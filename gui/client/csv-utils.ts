@@ -1,4 +1,4 @@
-import csvTypesIndex from "../schema/csv-types.json";
+import csvTypesIndex from "../../schema/csv-types.json";
 
 export interface CsvTypeDef {
   saveName: string;
@@ -10,14 +10,14 @@ export interface CsvTypeDef {
 
 type CsvSchemaRef = { schema: string };
 
-const schemaModules = import.meta.glob<CsvTypeDef>("../schema/*.json", {
+const schemaModules = import.meta.glob<CsvTypeDef>("../../schema/*.json", {
   eager: true,
   import: "default",
 });
 
 export const CSV_TYPES: CsvTypeDef[] = (csvTypesIndex as CsvSchemaRef[]).map(
   ({ schema }) => {
-    const csvType = schemaModules[`../schema/${schema}`];
+    const csvType = schemaModules[`../../schema/${schema}`];
     if (!csvType) {
       throw new Error(`Unknown CSV schema: ${schema}`);
     }

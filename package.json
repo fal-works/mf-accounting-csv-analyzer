@@ -3,10 +3,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "typecheck": "tsc -p gui/tsconfig.server.json --noEmit && tsc -p gui/tsconfig.json",
+    "typecheck": "tsc -p gui/server/tsconfig.json --noEmit && tsc -p gui/client/tsconfig.json",
     "test": "vitest run",
-    "build": "tsc -p gui/tsconfig.server.json && vite build gui",
-    "start": "pnpm build && node gui/dist/server.js"
+    "build": "tsc -p gui/server/tsconfig.json && vite build gui/client",
+    "start": "pnpm build && node gui/dist/server/server.js"
   },
   "devDependencies": {
     "@types/node": "^25.5.0",

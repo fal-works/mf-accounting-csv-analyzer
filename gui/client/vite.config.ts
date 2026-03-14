@@ -1,11 +1,12 @@
 import { defineConfig } from "vite";
 
 export default defineConfig({
+  root: ".",
   build: {
-    outDir: "dist/browser",
+    outDir: "../dist/client",
     emptyOutDir: true,
     rollupOptions: {
-      input: "csv-importer.html",
+      input: "./csv-importer.html",
     },
   },
 });

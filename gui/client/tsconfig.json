@@ -10,5 +10,5 @@
     "noEmit": true,
     "skipLibCheck": true
   },
-  "include": ["csv-importer.ts", "csv-utils.ts", "vite.config.ts"]
+  "include": ["csv-importer.ts", "csv-utils.ts", "vite.config.ts", "*.test.ts"]
 }
