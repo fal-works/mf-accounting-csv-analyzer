@@ -2,7 +2,12 @@ import http from "node:http";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { text } from "node:stream/consumers";
-import { countDataRows, isErrnoException, staticFileErrorResponse } from "./server-utils.js";
+import {
+  countDataRows,
+  getStaticRequestPath,
+  isErrnoException,
+  staticFileErrorResponse,
+} from "./server-utils.js";
 import type { ImportRequest } from "./server-utils.js";
 
 const PORT = 3456;
@@ -42,7 +47,7 @@ const server = http.createServer(async (req, res) => {
 
   // GET — serve static files from Vite build output
   if (req.method === "GET") {
-    const urlPath = req.url === "/" ? "/csv-importer.html" : req.url!;
+    const urlPath = getStaticRequestPath(req.url);
     const filePath = path.resolve(STATIC_DIR, urlPath.slice(1));
 
     // Prevent directory traversal

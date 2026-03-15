@@ -27,3 +27,10 @@ export function staticFileErrorResponse(error: unknown): {
   }
   return { status: 500, body: "Internal Server Error" };
 }
+
+export function getStaticRequestPath(rawUrl: string | undefined): string {
+  if (!rawUrl || rawUrl === "/") {
+    return "/csv-importer.html";
+  }
+  return new URL(rawUrl, "http://localhost").pathname;
+}

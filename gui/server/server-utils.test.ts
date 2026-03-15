@@ -1,5 +1,10 @@
 import { describe, expect, test } from "vitest";
-import { countDataRows, isErrnoException, staticFileErrorResponse } from "./server-utils.js";
+import {
+  countDataRows,
+  getStaticRequestPath,
+  isErrnoException,
+  staticFileErrorResponse,
+} from "./server-utils.js";
 
 describe("countDataRows", () => {
   test("counts data rows excluding header", () => {
@@ -63,5 +68,23 @@ describe("staticFileErrorResponse", () => {
       status: 500,
       body: "Internal Server Error",
     });
+  });
+});
+
+describe("getStaticRequestPath", () => {
+  test("maps root to the importer page", () => {
+    expect(getStaticRequestPath("/")).toBe("/csv-importer.html");
+  });
+
+  test("drops query strings", () => {
+    expect(getStaticRequestPath("/csv-importer.html?v=2")).toBe("/csv-importer.html");
+  });
+
+  test("drops URL fragments", () => {
+    expect(getStaticRequestPath("/assets/app.js#chunk")).toBe("/assets/app.js");
+  });
+
+  test("handles missing url", () => {
+    expect(getStaticRequestPath(undefined)).toBe("/csv-importer.html");
   });
 });
