@@ -42,9 +42,8 @@ uv run python -m analysis.tools.account_summary --target 2025
 - 同じ取引先・類似の摘要の過去仕訳との比較（`rg` が有効）
 - 同月の他の仕訳との関連確認（売掛金の計上と入金の対応など）
 - ステップ0で確認したメモに関連情報がないか再確認
-- 集計が必要なら、まず `uv run python -c "..."` の即興実行を検討する。
-  スクリプトを一時保存する価値があれば、チェックの試作は `analysis/checks/tmp_*.py`、
-  集計・調査補助は `analysis/tools/tmp_*.py` として保存する
+- 集計が必要なら、即興スクリプトを `tmp_` プレフィックス付きファイルとして保存してから実行する。
+  チェック処理の試作は `analysis/checks/tmp_*.py`、集計・調査補助は `analysis/tools/tmp_*.py` に置く
 
 ## ステップ4: メモの記録
 
