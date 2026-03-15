@@ -29,6 +29,7 @@ class TestDiscoverSummaries:
 
         assert "account_summary" in names
         assert "monthly_trend" in names
+        assert "revenue_by_client" in names
         assert "vendor_summary" in names
         assert "tax_summary" in names
         assert "runner" not in names
@@ -39,6 +40,7 @@ class TestDiscoverSummaries:
 
         assert summary_map["account_summary"] is False
         assert summary_map["monthly_trend"] is False
+        assert summary_map["revenue_by_client"] is False
 
 
 class TestRunAll:

@@ -24,6 +24,8 @@ SUMMARY_CLI_CASES = [
     ("analysis.summaries.account_summary", "print_summary", ["--target", "2025"]),
     ("analysis.summaries.monthly_trend", "print_summary", ["dummy.csv"]),
     ("analysis.summaries.monthly_trend", "print_summary", ["--target", "2025"]),
+    ("analysis.summaries.revenue_by_client", "print_summary", ["dummy.csv"]),
+    ("analysis.summaries.revenue_by_client", "print_summary", ["--target", "2025"]),
     ("analysis.summaries.tax_summary", "print_summary", ["dummy.csv"]),
     ("analysis.summaries.tax_summary", "print_summary", ["--target", "2025"]),
     ("analysis.summaries.vendor_summary", "print_summary", ["dummy.csv"]),
