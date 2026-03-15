@@ -234,23 +234,6 @@ def median(values: list[int]) -> float:
     return (s[n // 2 - 1] + s[n // 2]) / 2
 
 
-_SUMMARY_MAX_LEN = 20
-
-
-def vendor_label(vendor: str, summary: str) -> str | None:
-    """取引先名を返す。空の場合は摘要から代替ラベルを生成する。
-
-    取引先・摘要の両方が空の場合は None を返す。
-    """
-    vendor = vendor.strip()
-    if vendor:
-        return vendor
-    summary = summary.strip()
-    if not summary:
-        return None
-    if len(summary) > _SUMMARY_MAX_LEN:
-        summary = summary[:_SUMMARY_MAX_LEN] + "…"
-    return f"摘要: {summary}"
 
 
 # 資産・負債・資本など、経費分析系チェックでスキップする勘定科目の共通セット

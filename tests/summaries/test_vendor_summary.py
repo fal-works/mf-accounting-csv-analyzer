@@ -8,7 +8,7 @@ import pytest
 
 from analysis.common import load_target_rows
 from analysis.journal_columns import JOURNAL_COLUMNS, TX_NO
-from analysis.summaries.vendor_summary import MULTI_YEAR, main, print_summary, summarize_vendors
+from analysis.summaries.vendor_summary import MULTI_YEAR, NO_VENDOR_LABEL, main, print_summary, summarize_vendors
 from tests.conftest import make_simple_row
 
 
@@ -49,9 +49,9 @@ def test_summarize_vendors_counts_both_sides():
     ]
 
 
-def test_summarize_vendors_uses_summary_for_empty_vendor():
+def test_summarize_vendors_uses_fixed_label_for_empty_vendor():
     rows = [
-        make_simple_row("1", "2025/01/10", "通信費", "普通預金", "1000", summary="インターネット利用料"),
+        make_simple_row("1", "2025/01/10", "通信費", "普通預金", "1000"),
         make_simple_row("2", "2025/01/20", "通信費", "普通預金", "2000", debit_vendor="NTT"),
     ]
 
@@ -59,44 +59,19 @@ def test_summarize_vendors_uses_summary_for_empty_vendor():
 
     assert len(result) == 2
     assert result[0][0] == "NTT"
-    assert result[1] == ("摘要: インターネット利用料", 1, 1000)
+    assert result[1] == (NO_VENDOR_LABEL, 1, 1000)
 
 
-def test_summarize_vendors_truncates_long_summary():
-    rows = [
-        make_simple_row("1", "2025/01/10", "通信費", "普通預金", "500",
-                        summary="これは二十文字を超える長い摘要テキストです。カットされるはず。"),
-    ]
-
-    result = summarize_vendors(rows)
-
-    assert len(result) == 1
-    label = result[0][0]
-    assert label.startswith("摘要: ")
-    assert label.endswith("…")
-
-
-def test_summarize_vendors_skips_row_without_vendor_and_summary():
+def test_summarize_vendors_fixed_label_sorted_last():
     rows = [
         make_simple_row("1", "2025/01/10", "通信費", "普通預金", "500"),
-        make_simple_row("2", "2025/01/20", "通信費", "普通預金", "1000", debit_vendor="NTT"),
-    ]
-
-    result = summarize_vendors(rows)
-
-    assert result == [("NTT", 1, 1000)]
-
-
-def test_summarize_vendors_summary_label_sorted_last():
-    rows = [
-        make_simple_row("1", "2025/01/10", "通信費", "普通預金", "500", summary="回線料金"),
         make_simple_row("2", "2025/01/20", "通信費", "普通預金", "1000", debit_vendor="Amazon"),
         make_simple_row("3", "2025/01/25", "通信費", "普通預金", "2000", debit_vendor="NTT"),
     ]
 
     result = summarize_vendors(rows)
 
-    assert [v for v, *_ in result] == ["Amazon", "NTT", "摘要: 回線料金"]
+    assert [v for v, *_ in result] == ["Amazon", "NTT", NO_VENDOR_LABEL]
 
 
 def test_summarize_vendors_includes_credit_vendor():
