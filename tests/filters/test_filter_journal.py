@@ -9,6 +9,7 @@ from analysis.journal_columns import CREDIT_AMOUNT, DEBIT_AMOUNT
 from analysis.filters.filter_journal import (
     FilterCondition,
     MULTI_YEAR,
+    PRETTY_SUMMARY_LIMIT,
     filter_rows,
     main,
     match_row,
@@ -131,6 +132,49 @@ def test_print_rows_outputs_tsv(sample_rows, capsys):
     assert out[2] == "（1件）"
 
 
+def test_print_rows_pretty_aligns_columns(sample_rows, capsys):
+    print_rows(sample_rows[:1], pretty=True)
+    out = capsys.readouterr().out.strip().splitlines()
+
+    assert "\t" not in out[0]
+    assert "\t" not in out[1]
+    assert out[2] == "（1件）"
+
+
+def test_print_rows_pretty_truncates_long_summary(capsys):
+    row = make_simple_row(
+        "1",
+        "2025/01/01",
+        "消耗品費",
+        "未払金",
+        "1000",
+        summary="あ" * 50,
+    )
+
+    print_rows([row], pretty=True)
+
+    out = capsys.readouterr().out
+    assert "あ" * PRETTY_SUMMARY_LIMIT + "…" in out
+    assert "あ" * 50 not in out
+
+
+def test_print_rows_tsv_does_not_truncate_summary(capsys):
+    long_summary = "あ" * 50
+    row = make_simple_row(
+        "1",
+        "2025/01/01",
+        "消耗品費",
+        "未払金",
+        "1000",
+        summary=long_summary,
+    )
+
+    print_rows([row])
+
+    out = capsys.readouterr().out
+    assert long_summary in out
+
+
 def test_main_rejects_no_filter_condition(monkeypatch):
     monkeypatch.setattr(sys, "argv", ["prog", "--target", "2025"])
 
@@ -167,6 +211,28 @@ def test_main_filters_target_year_csv(tmp_path, monkeypatch, capsys):
     out = capsys.readouterr().out.strip().splitlines()
     assert out[0] == "取引No\t取引日\t借方勘定科目\t借方補助科目\t借方金額(円)\t貸方勘定科目\t貸方補助科目\t貸方金額(円)\t摘要"
     assert out[1].startswith("1\t2025/06/05\t旅費交通費")
+    assert out[2] == "（1件）"
+
+
+def test_main_filters_target_year_csv_with_pretty(tmp_path, monkeypatch, capsys):
+    journal = tmp_path / "data" / "2025" / "仕訳帳.csv"
+    journal.parent.mkdir(parents=True)
+    write_csv(
+        [
+            make_simple_row("1", "2025/06/05", "旅費交通費", "未払金", "12000", summary="タクシー代"),
+            make_simple_row("2", "2025/06/20", "通信費", "普通預金", "5000", summary="サーバー代"),
+        ],
+        journal,
+    )
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(sys, "argv", ["prog", "--target", "2025", "--account", "旅費", "--pretty"])
+
+    main()
+
+    out = capsys.readouterr().out.strip().splitlines()
+    assert "\t" not in out[0]
+    assert "\t" not in out[1]
+    assert "旅費交通費" in out[1]
     assert out[2] == "（1件）"
 
 

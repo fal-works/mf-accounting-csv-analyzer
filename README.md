@@ -37,9 +37,9 @@ pnpm start
 基本はAI任せですが、以下のコマンドを手動で実行することもできます。
 
 ```bash
-uv run summary --target 2025 --pretty      # サマリー（全体像の把握）
-uv run check --target 2025                 # チェック（計上ミスの検出）
-uv run filter-journal --target 2025 [条件]  # 仕訳の絞り込み検索
+uv run summary --target 2025 --pretty  # サマリー（全体像の把握）
+uv run check --target 2025  # チェック（計上ミスの検出）
+uv run filter-journal --target 2025 [条件] --pretty  # 仕訳の絞り込み検索
 ```
 
 各コマンドの詳細は `--help` を参照してください。

@@ -9,6 +9,8 @@ from datetime import date
 from analysis.common import (
     DataFileError,
     add_journal_args,
+    format_pretty,
+    format_tsv,
     load_journal,
     load_target_rows,
     parse_amount,
@@ -31,6 +33,7 @@ from analysis.journal_columns import (
 )
 
 MULTI_YEAR = False
+PRETTY_SUMMARY_LIMIT = 40
 
 _OUTPUT_COLUMNS = (
     TX_NO,
@@ -43,7 +46,6 @@ _OUTPUT_COLUMNS = (
     CREDIT_AMOUNT,
     SUMMARY,
 )
-_OUTPUT_HEADER = "\t".join(_OUTPUT_COLUMNS)
 _SIDE_MAP = {
     "debit": DEBIT_SIDE,
     "credit": CREDIT_SIDE,
@@ -126,11 +128,26 @@ def filter_rows(rows: list[dict[str, str]], cond: FilterCondition) -> list[dict[
     return [row for row in rows if match_row(row, cond)]
 
 
-def print_rows(rows: list[dict[str, str]]) -> None:
-    """TSV 形式でフィルター結果を出力する。"""
-    print(_OUTPUT_HEADER)
+def _format_summary(value: str, *, pretty: bool) -> str:
+    """pretty出力時のみ長い摘要を省略表示する。"""
+    if not pretty or len(value) <= PRETTY_SUMMARY_LIMIT:
+        return value
+    return value[:PRETTY_SUMMARY_LIMIT] + "…"
+
+
+def print_rows(rows: list[dict[str, str]], *, pretty: bool = False) -> None:
+    """フィルター結果を表形式で出力する。"""
+    formatted_rows = []
     for row in rows:
-        print("\t".join(row[column] for column in _OUTPUT_COLUMNS))
+        values = []
+        for column in _OUTPUT_COLUMNS:
+            value = row[column]
+            if column == SUMMARY:
+                value = _format_summary(value, pretty=pretty)
+            values.append(value)
+        formatted_rows.append(values)
+    formatter = format_pretty if pretty else format_tsv
+    print(formatter(list(_OUTPUT_COLUMNS), formatted_rows))
     print(f"（{len(rows)}件）")
 
 
@@ -154,6 +171,7 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--amount-min", type=int, help="金額の下限（以上）")
     parser.add_argument("--amount-max", type=int, help="金額の上限（以下）")
     parser.add_argument("--side", choices=("debit", "credit"), help="条件判定の対象を借方/貸方に限定")
+    parser.add_argument("--pretty", action="store_true", help="人間向け整形出力")
     return parser
 
 
@@ -202,7 +220,7 @@ def main() -> None:
         print(f"エラー: {e}", file=sys.stderr)
         sys.exit(1)
 
-    print_rows(filter_rows(rows, cond))
+    print_rows(filter_rows(rows, cond), pretty=args.pretty)
 
 
 if __name__ == "__main__":
