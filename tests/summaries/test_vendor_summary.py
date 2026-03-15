@@ -8,7 +8,7 @@ import pytest
 
 from analysis.common import load_target_rows
 from analysis.journal_columns import JOURNAL_COLUMNS, TX_NO
-from analysis.summaries.vendor_summary import MULTI_YEAR, main, print_summary, summarize_vendors
+from analysis.summaries.vendor_summary import MULTI_YEAR, NO_VENDOR_LABEL, main, print_summary, summarize_vendors
 from tests.conftest import make_simple_row
 
 
@@ -35,7 +35,7 @@ def test_summarize_vendors_basic():
     ]
 
 
-def test_summarize_vendors_skips_empty_vendor():
+def test_summarize_vendors_includes_empty_vendor_with_label():
     rows = [
         make_simple_row("1", "2025/01/10", "通信費", "普通預金", "1000"),
         make_simple_row("2", "2025/01/20", "通信費", "普通預金", "2000", debit_vendor="NTT"),
@@ -43,8 +43,21 @@ def test_summarize_vendors_skips_empty_vendor():
 
     result = summarize_vendors(rows)
 
-    assert len(result) == 1
+    assert len(result) == 2
     assert result[0][0] == "NTT"
+    assert result[1] == (NO_VENDOR_LABEL, 1, 1000)
+
+
+def test_summarize_vendors_no_vendor_label_sorted_last():
+    rows = [
+        make_simple_row("1", "2025/01/10", "通信費", "普通預金", "500"),
+        make_simple_row("2", "2025/01/20", "通信費", "普通預金", "1000", debit_vendor="Amazon"),
+        make_simple_row("3", "2025/01/25", "通信費", "普通預金", "2000", debit_vendor="NTT"),
+    ]
+
+    result = summarize_vendors(rows)
+
+    assert [v for v, _, _ in result] == ["Amazon", "NTT", NO_VENDOR_LABEL]
 
 
 def test_summarize_vendors_includes_credit_vendor():
