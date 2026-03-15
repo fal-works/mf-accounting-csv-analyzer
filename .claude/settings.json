@@ -1,5 +1,16 @@
 {
+  "sandbox": {
+    "enabled": true,
+    "allowUnsandboxedCommands": false
+  },
   "permissions": {
+    "disableBypassPermissionsMode": "disable",
+    "deny": [
+      "Bash(curl *)",
+      "Bash(wget *)",
+      "Bash(git push *)",
+      "Bash(chmod 777 *)"
+    ],
     "allow": [
       "Bash(rg *)",
       "Bash(grep *)",
