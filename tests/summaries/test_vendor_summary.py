@@ -111,6 +111,24 @@ def test_print_summary_outputs_pretty(capsys):
     assert out[2].startswith("Amazon")
 
 
+def test_print_summary_truncates_long_vendor_name_only_in_pretty(capsys):
+    long_vendor = "とても長い取引先名株式会社あいうえおかきくけこさしすせそ"
+    rows = [
+        make_simple_row("1", "2025/01/10", "通信費", "普通預金", "1000", debit_vendor=long_vendor),
+    ]
+
+    print_summary(rows, pretty=True)
+    pretty_out = capsys.readouterr().out.strip().splitlines()
+
+    assert pretty_out[2].startswith("とても長い取引先名株式会社あいうえおかき…")
+    assert long_vendor not in pretty_out[2]
+
+    print_summary(rows)
+    tsv_out = capsys.readouterr().out.strip().splitlines()
+
+    assert tsv_out[2] == f"{long_vendor}\t1\t通信費"
+
+
 def test_print_summary_omits_accounts_for_no_vendor_label(capsys):
     rows = [
         make_simple_row("1", "2025/01/10", "通信費", "普通預金", "1000"),

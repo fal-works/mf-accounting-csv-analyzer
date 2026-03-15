@@ -14,6 +14,14 @@ from analysis.journal_columns import DEBIT_SIDE, SIDES
 MULTI_YEAR = False
 
 NO_VENDOR_LABEL = "（取引先未入力）"
+PRETTY_VENDOR_NAME_LIMIT = 20
+
+
+def _format_vendor_name(vendor: str, *, pretty: bool) -> str:
+    """pretty出力時のみ長い取引先名を省略表示する。"""
+    if not pretty or len(vendor) <= PRETTY_VENDOR_NAME_LIMIT:
+        return vendor
+    return vendor[:PRETTY_VENDOR_NAME_LIMIT] + "…"
 
 
 def summarize_vendors(
@@ -66,7 +74,7 @@ def print_summary(all_rows: list[dict[str, str]], *, pretty: bool = False) -> No
     rows = []
     for vendor, count, accounts in summarize_vendors(all_rows):
         accounts_display = "（省略）" if vendor == NO_VENDOR_LABEL else ", ".join(accounts)
-        rows.append([vendor, str(count), accounts_display])
+        rows.append([_format_vendor_name(vendor, pretty=pretty), str(count), accounts_display])
     formatter = format_pretty if pretty else format_tsv
     print(formatter(headers, rows))
     print()
