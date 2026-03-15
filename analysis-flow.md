@@ -19,8 +19,8 @@
 サマリーで全体像を把握してからチェック結果を評価する。
 
 ```bash
-uv run python -m analysis.summaries.runner --target 2025
-uv run python -m analysis.checks.runner --target 2025
+uv run summary --target 2025
+uv run check --target 2025
 ```
 
 - サマリーツールの一覧とそれぞれの目的は [analysis/summaries/catalog.md](analysis/summaries/catalog.md) を参照。
@@ -47,7 +47,7 @@ uv run python -m analysis.checks.runner --target 2025
 - 該当仕訳の**メモ欄**確認（既知の事情が記録されている場合がある）
 - 同じ取引先・類似の摘要の過去仕訳との比較（`rg` が有効）
 - 複数条件での絞り込み（科目＋金額範囲、取引先＋日付範囲など）は
-  `uv run python -m analysis.filters.filter_journal` が有効。オプションは `--help` を参照
+  `uv run filter-journal` が有効。オプションは `--help` を参照
 - 同月の他の仕訳との関連確認（売掛金の計上と入金の対応など）
 - ステップ0で確認したメモに関連情報がないか再確認
 - 集計が必要なら、即興スクリプトを `tmp_` プレフィックス付きファイルとして保存してから実行する。

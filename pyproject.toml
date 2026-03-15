@@ -7,6 +7,11 @@ dependencies = []
 [dependency-groups]
 dev = ["pytest>=9.0"]
 
+[project.scripts]
+check = "analysis.checks.runner:main"
+summary = "analysis.summaries.runner:main"
+filter-journal = "analysis.filters.filter_journal:main"
+
 [build-system]
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
