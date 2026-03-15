@@ -6,8 +6,9 @@ from pathlib import Path
 
 import pytest
 
+from analysis.common import load_target_rows
 from analysis.journal_columns import JOURNAL_COLUMNS, TX_NO
-from analysis.tools.monthly_trend import load_target_rows, main, print_monthly, summarize_monthly
+from analysis.tools.monthly_trend import MULTI_YEAR, main, print_summary, summarize_monthly
 from conftest import make_simple_row
 
 
@@ -54,14 +55,14 @@ def test_summarize_monthly_empty():
     assert account_monthly == {}
 
 
-def test_print_monthly_outputs_tsv(capsys):
+def test_print_summary_outputs_tsv(capsys):
     rows = [
         make_simple_row("1", "2025/01/10", "通信費", "普通預金", "1000"),
         make_simple_row("2", "2025/02/15", "通信費", "普通預金", "2000"),
         make_simple_row("3", "2025/01/25", "新聞図書費", "普通預金", "1500"),
     ]
 
-    print_monthly(rows)
+    print_summary(rows)
     out = capsys.readouterr().out.strip().splitlines()
 
     assert out[0] == "[月次推移]"
@@ -96,3 +97,7 @@ def test_main_rejects_target_and_paths_together(monkeypatch):
         main()
 
     assert excinfo.value.code == 2
+
+
+def test_multi_year_is_false():
+    assert MULTI_YEAR is False

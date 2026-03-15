@@ -154,6 +154,30 @@ def run_check_cli(
     check_fn(rows)
 
 
+def run_summary_cli(
+    summary_fn: Callable[[list[dict[str, str]]], None],
+    description: str,
+) -> None:
+    """標準的なサマリーCLIを実行する。"""
+    parser = argparse.ArgumentParser(description=description)
+    add_journal_args(parser)
+    args = parser.parse_args()
+
+    try:
+        resolved = resolve_journals(args, parser)
+        if resolved.target_year is not None:
+            rows = load_target_rows(resolved.target_year, years=args.years)
+        else:
+            rows: list[dict[str, str]] = []
+            for path in resolved.paths:
+                rows.extend(load_journal(path))
+    except DataFileError as e:
+        print(f"エラー: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    summary_fn(rows)
+
+
 def print_header(title: str) -> None:
     """チェック結果のヘッダーを出力する。"""
     print(f"\n[{title}]")

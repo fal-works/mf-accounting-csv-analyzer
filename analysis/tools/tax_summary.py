@@ -1,19 +1,15 @@
 #!/usr/bin/env python3
 """仕訳帳の税区分別金額サマリーを出力する。"""
 
-import argparse
-import sys
 from collections import defaultdict
 
 from analysis.common import (
-    DataFileError,
-    add_journal_args,
-    load_journal,
-    load_target_rows,
     parse_amount,
-    resolve_journals,
+    run_summary_cli,
 )
 from analysis.journal_columns import SIDES
+
+MULTI_YEAR = False
 
 
 def summarize_tax(
@@ -57,23 +53,7 @@ def print_summary(all_rows: list[dict[str, str]]) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="仕訳帳の税区分別金額サマリー")
-    add_journal_args(parser)
-    args = parser.parse_args()
-
-    try:
-        resolved = resolve_journals(args, parser)
-        if resolved.target_year is not None:
-            all_rows = load_target_rows(resolved.target_year, years=args.years)
-        else:
-            all_rows = []
-            for path in resolved.paths:
-                all_rows.extend(load_journal(path))
-    except DataFileError as e:
-        print(f"エラー: {e}", file=sys.stderr)
-        sys.exit(1)
-
-    print_summary(all_rows)
+    run_summary_cli(print_summary, "仕訳帳の税区分別金額サマリー")
 
 
 if __name__ == "__main__":

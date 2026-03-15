@@ -6,8 +6,9 @@ from pathlib import Path
 
 import pytest
 
+from analysis.common import load_target_rows
 from analysis.journal_columns import JOURNAL_COLUMNS, TX_NO
-from analysis.tools.tax_summary import load_target_rows, main, print_summary, summarize_tax
+from analysis.tools.tax_summary import MULTI_YEAR, main, print_summary, summarize_tax
 from conftest import make_simple_row
 
 
@@ -113,3 +114,7 @@ def test_main_rejects_target_and_paths_together(monkeypatch):
         main()
 
     assert excinfo.value.code == 2
+
+
+def test_multi_year_is_false():
+    assert MULTI_YEAR is False

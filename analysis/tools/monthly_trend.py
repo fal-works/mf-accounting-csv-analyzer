@@ -1,22 +1,18 @@
 #!/usr/bin/env python3
 """仕訳帳の勘定科目別・月別金額推移を出力する。"""
 
-import argparse
-import sys
 from collections import defaultdict
 
 from analysis.common import (
-    DataFileError,
     SKIP_ACCOUNTS_COMMON,
-    add_journal_args,
-    load_journal,
-    load_target_rows,
     month_key,
     parse_amount,
     parse_date,
-    resolve_journals,
+    run_summary_cli,
 )
 from analysis.journal_columns import SIDES, TX_DATE
+
+MULTI_YEAR = False
 
 
 def summarize_monthly(
@@ -54,7 +50,7 @@ def summarize_monthly(
     return sorted_months, result
 
 
-def print_monthly(all_rows: list[dict[str, str]]) -> None:
+def print_summary(all_rows: list[dict[str, str]]) -> None:
     """TSV 形式で月別推移を標準出力する。"""
     sorted_months, account_monthly = summarize_monthly(all_rows)
     if not sorted_months:
@@ -70,23 +66,7 @@ def print_monthly(all_rows: list[dict[str, str]]) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="仕訳帳の勘定科目別・月別金額推移")
-    add_journal_args(parser)
-    args = parser.parse_args()
-
-    try:
-        resolved = resolve_journals(args, parser)
-        if resolved.target_year is not None:
-            all_rows = load_target_rows(resolved.target_year, years=args.years)
-        else:
-            all_rows = []
-            for path in resolved.paths:
-                all_rows.extend(load_journal(path))
-    except DataFileError as e:
-        print(f"エラー: {e}", file=sys.stderr)
-        sys.exit(1)
-
-    print_monthly(all_rows)
+    run_summary_cli(print_summary, "仕訳帳の勘定科目別・月別金額推移")
 
 
 if __name__ == "__main__":

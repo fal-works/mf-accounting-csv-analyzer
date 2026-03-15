@@ -19,6 +19,7 @@ from analysis.common import (
     read_csv,
     resolve_journals,
     run_check_cli,
+    run_summary_cli,
 )
 from analysis.journal_columns import JOURNAL_COLUMNS, TX_NO
 from conftest import make_simple_row
@@ -167,6 +168,37 @@ class TestRunCheckCli:
         run_check_cli(fake_check, "multi", multi_file=True)
 
         assert seen == [[{"path": "2024.csv"}, {"path": "2025.csv"}]]
+
+
+class TestRunSummaryCli:
+    def test_paths_combines_rows(self, monkeypatch):
+        monkeypatch.setattr(
+            "analysis.common.load_journal",
+            lambda path: [{"path": Path(path).name}],
+        )
+        monkeypatch.setattr("sys.argv", ["prog", "a.csv", "b.csv"])
+
+        seen = []
+
+        def fake_summary(rows):
+            seen.append(rows)
+
+        run_summary_cli(fake_summary, "summary")
+
+        assert seen == [[{"path": "a.csv"}, {"path": "b.csv"}]]
+
+    def test_target_loads_target_year_rows(self, monkeypatch):
+        monkeypatch.setattr("analysis.common.load_target_rows", lambda year, years=3: [{"year": str(year), "years": str(years)}])
+        monkeypatch.setattr("sys.argv", ["prog", "--target", "2025", "--years", "2"])
+
+        seen = []
+
+        def fake_summary(rows):
+            seen.append(rows)
+
+        run_summary_cli(fake_summary, "summary")
+
+        assert seen == [[{"year": "2025", "years": "2"}]]
 
 
 class TestJournalArgs:
