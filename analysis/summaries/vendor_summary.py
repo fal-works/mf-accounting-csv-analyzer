@@ -4,6 +4,8 @@
 from collections import defaultdict
 
 from analysis.common import (
+    format_pretty,
+    format_tsv,
     parse_amount,
     run_summary_cli,
 )
@@ -57,13 +59,16 @@ def summarize_vendors(
     ]
 
 
-def print_summary(all_rows: list[dict[str, str]]) -> None:
-    """TSV 形式で取引先別サマリーを標準出力する。"""
+def print_summary(all_rows: list[dict[str, str]], *, pretty: bool = False) -> None:
+    """取引先別サマリーを標準出力する。"""
     print("[取引先別サマリー]")
-    print("取引先\t件数\t勘定科目")
+    headers = ["取引先", "件数", "勘定科目"]
+    rows = []
     for vendor, count, accounts in summarize_vendors(all_rows):
         accounts_display = "（省略）" if vendor == NO_VENDOR_LABEL else ", ".join(accounts)
-        print(f"{vendor}\t{count}\t{accounts_display}")
+        rows.append([vendor, str(count), accounts_display])
+    formatter = format_pretty if pretty else format_tsv
+    print(formatter(headers, rows))
     print()
 
 

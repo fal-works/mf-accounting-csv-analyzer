@@ -44,10 +44,12 @@ class TestRunAll:
 
         seen: list[str] = []
 
-        def account_summary(rows):
+        def account_summary(rows, *, pretty=False):
+            assert pretty is False
             seen.append(f"account:{len(rows)}")
 
-        def vendor_summary(rows):
+        def vendor_summary(rows, *, pretty=False):
+            assert pretty is False
             seen.append(f"vendor:{len(rows)}")
 
         monkeypatch.setattr(
@@ -76,8 +78,8 @@ class TestRunAll:
         monkeypatch.setattr(
             "analysis.summaries.runner.discover_summaries",
             lambda: [
-                ("account_summary", lambda rows: seen.append(f"account:{len(rows)}"), False),
-                ("vendor_summary", lambda rows: seen.append(f"vendor:{len(rows)}"), False),
+                ("account_summary", lambda rows, *, pretty=False: seen.append(f"account:{len(rows)}"), False),
+                ("vendor_summary", lambda rows, *, pretty=False: seen.append(f"vendor:{len(rows)}"), False),
             ],
         )
 
@@ -100,10 +102,12 @@ class TestRunAll:
 
         seen: dict[str, list[str]] = {}
 
-        def single_year_summary(rows):
+        def single_year_summary(rows, *, pretty=False):
+            assert pretty is False
             seen["single"] = [row[TX_NO] for row in rows]
 
-        def multi_year_summary(rows):
+        def multi_year_summary(rows, *, pretty=False):
+            assert pretty is False
             seen["multi"] = [row[TX_NO] for row in rows]
 
         monkeypatch.setattr(
@@ -134,7 +138,7 @@ class TestRunAll:
         )
         monkeypatch.setattr(
             "analysis.summaries.runner.discover_summaries",
-            lambda: [("account_summary", lambda rows: None, False)],
+            lambda: [("account_summary", lambda rows, *, pretty=False: None, False)],
         )
 
         executed = run_all(

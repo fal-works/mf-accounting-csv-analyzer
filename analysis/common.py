@@ -3,7 +3,9 @@
 import argparse
 import csv
 import json
+import re
 import sys
+import unicodedata
 from datetime import date, datetime
 from pathlib import Path
 from typing import Callable, NamedTuple
@@ -32,6 +34,9 @@ class ResolvedJournals(NamedTuple):
     target_year: int | None
     target_path: Path | None
     paths: list[Path]
+
+
+_NUMERIC_PATTERN = re.compile(r"^-?(?:\d{1,3}(?:,\d{3})*|\d+)(?:\.\d+)?$")
 
 
 def read_csv(path: str | Path) -> list[dict[str, str]]:
@@ -168,6 +173,7 @@ def run_summary_cli(
     """標準的なサマリーCLIを実行する。"""
     parser = argparse.ArgumentParser(description=description)
     add_journal_args(parser)
+    parser.add_argument("--pretty", action="store_true", help="人間向け整形出力")
     args = parser.parse_args()
 
     try:
@@ -182,7 +188,7 @@ def run_summary_cli(
         print(f"エラー: {e}", file=sys.stderr)
         sys.exit(1)
 
-    summary_fn(rows)
+    summary_fn(rows, pretty=args.pretty)
 
 
 def print_header(title: str) -> None:
@@ -221,6 +227,61 @@ def parse_amount(value: str) -> int | None:
         return int(value)
     except (ValueError, TypeError):
         return None
+
+
+def _display_width(s: str) -> int:
+    """端末上の表示幅を返す。"""
+    width = 0
+    for ch in s:
+        width += 2 if unicodedata.east_asian_width(ch) in ("W", "F") else 1
+    return width
+
+
+def _pad_cell(value: str, width: int, *, align_right: bool) -> str:
+    """表示幅ベースでセルを左右どちらかに揃える。"""
+    padding = max(width - _display_width(value), 0)
+    spaces = " " * padding
+    return f"{spaces}{value}" if align_right else f"{value}{spaces}"
+
+
+def _is_numeric_column(values: list[str]) -> bool:
+    """データ行がすべて数値なら数値列とみなす。"""
+    return bool(values) and all(_NUMERIC_PATTERN.fullmatch(value) for value in values)
+
+
+def format_tsv(headers: list[str], rows: list[list[str]]) -> str:
+    """タブ区切りで結合する。"""
+    lines = ["\t".join(headers)]
+    lines.extend("\t".join(row) for row in rows)
+    return "\n".join(lines)
+
+
+def format_pretty(headers: list[str], rows: list[list[str]]) -> str:
+    """表示幅に応じてスペースで整列した表を返す。"""
+    table = [headers, *rows]
+    widths = [
+        max(_display_width(row[index]) for row in table)
+        for index in range(len(headers))
+    ]
+    numeric_columns = [
+        _is_numeric_column([row[index] for row in rows])
+        for index in range(len(headers))
+    ]
+
+    lines = [
+        "  ".join(
+            (
+                (" " * max(widths[index] - _display_width(value), 0)) + value
+                if numeric_columns[index]
+                else value
+            )
+            if index == len(headers) - 1
+            else _pad_cell(value, widths[index], align_right=numeric_columns[index])
+            for index, value in enumerate(row)
+        )
+        for row in table
+    ]
+    return "\n".join(lines)
 
 
 def median(values: list[int]) -> float:

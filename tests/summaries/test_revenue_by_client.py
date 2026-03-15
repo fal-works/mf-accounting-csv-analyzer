@@ -107,6 +107,22 @@ def test_print_summary_outputs_tsv(capsys):
     assert out[4] == f"{NO_CLIENT_LABEL}\t1\t2000"
 
 
+def test_print_summary_outputs_pretty(capsys):
+    rows = [
+        make_simple_row("1", "2025/01/10", "売掛金", "売上高", "1000", credit_vendor="デンキヤギ株式会社"),
+        make_simple_row("2", "2025/01/20", "売上高", "売掛金", "500", debit_vendor="デンキヤギ株式会社"),
+        make_simple_row("3", "2025/01/25", "売掛金", "売上高", "1500", credit_vendor="ピクシブ株式会社"),
+    ]
+
+    print_summary(rows, pretty=True)
+    out = capsys.readouterr().out.strip().splitlines()
+
+    assert out[0] == "[売上先別サマリー]"
+    assert "\t" not in out[1]
+    assert "  " in out[1]
+    assert out[2].endswith("  2   500")
+
+
 def test_load_target_rows_includes_only_target_year(tmp_path):
     journal_2024 = tmp_path / "2024" / "仕訳帳.csv"
     journal_2025 = tmp_path / "2025" / "仕訳帳.csv"

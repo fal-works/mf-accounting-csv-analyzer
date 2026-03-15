@@ -40,6 +40,23 @@ def test_print_summary_outputs_tsv(capsys):
     assert out[3] == "通信費\t2\t3000\t1500\t1500\t1000\t2000"
 
 
+def test_print_summary_outputs_pretty(capsys):
+    rows = [
+        make_simple_row("1", "2025/01/10", "通信費", "普通預金", "1000"),
+        make_simple_row("2", "2025/01/20", "通信費", "普通預金", "2000"),
+        make_simple_row("3", "2025/01/25", "新聞図書費", "普通預金", "1500"),
+    ]
+
+    print_summary(rows, pretty=True)
+    out = capsys.readouterr().out.strip().splitlines()
+
+    assert out[0] == "[勘定科目別サマリー]"
+    assert "\t" not in out[1]
+    assert "  " in out[1]
+    assert "新聞図書費" in out[2]
+    assert "  1500" in out[2]
+
+
 def test_median_handles_even_and_odd_counts():
     assert median([1, 9, 5]) == 5.0
     assert median([1, 9, 5, 7]) == 6.0

@@ -43,6 +43,7 @@ def run_all(
     selected_journals: dict[int, Path] | None = None,
     only: set[str] | None = None,
     skip: set[str] | None = None,
+    pretty: bool = False,
 ) -> list[str]:
     """全サマリーツールを実行し、実行したツール名のリストを返す。"""
     skip = skip or set()
@@ -72,7 +73,7 @@ def run_all(
             continue
 
         rows = all_rows if multi_year else target_rows
-        summary_fn(rows)
+        summary_fn(rows, pretty=pretty)
         executed.append(name)
 
     return executed
@@ -100,6 +101,7 @@ def main() -> None:
     )
     parser.add_argument("--only", help="実行するツール名（カンマ区切り）")
     parser.add_argument("--skip", help="スキップするツール名（カンマ区切り）")
+    parser.add_argument("--pretty", action="store_true", help="人間向け整形出力")
     parser.add_argument(
         "--list",
         action="store_true",
@@ -133,6 +135,7 @@ def main() -> None:
             selected_journals=selected_journals,
             only=only,
             skip=skip,
+            pretty=args.pretty,
         )
     except DataFileError as e:
         print(f"エラー: {e}", file=sys.stderr)

@@ -4,6 +4,8 @@
 from collections import defaultdict
 
 from analysis.common import (
+    format_pretty,
+    format_tsv,
     parse_amount,
     run_summary_cli,
 )
@@ -43,12 +45,16 @@ def summarize_tax(
     return summaries
 
 
-def print_summary(all_rows: list[dict[str, str]]) -> None:
-    """TSV 形式で税区分別サマリーを標準出力する。"""
+def print_summary(all_rows: list[dict[str, str]], *, pretty: bool = False) -> None:
+    """税区分別サマリーを標準出力する。"""
     print("[税区分別サマリー]")
-    print("税区分\t借方/貸方\t件数\t合計")
-    for tax, side_label, count, total in summarize_tax(all_rows):
-        print(f"{tax}\t{side_label}\t{count}\t{total}")
+    headers = ["税区分", "借方/貸方", "件数", "合計"]
+    rows = [
+        [tax, side_label, str(count), str(total)]
+        for tax, side_label, count, total in summarize_tax(all_rows)
+    ]
+    formatter = format_pretty if pretty else format_tsv
+    print(formatter(headers, rows))
     print()
 
 

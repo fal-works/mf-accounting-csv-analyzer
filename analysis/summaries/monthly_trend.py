@@ -5,6 +5,8 @@ from collections import defaultdict
 
 from analysis.common import (
     SKIP_ACCOUNTS_COMMON,
+    format_pretty,
+    format_tsv,
     month_key,
     parse_amount,
     parse_date,
@@ -50,18 +52,20 @@ def summarize_monthly(
     return sorted_months, result
 
 
-def print_summary(all_rows: list[dict[str, str]]) -> None:
-    """TSV 形式で月別推移を標準出力する。"""
+def print_summary(all_rows: list[dict[str, str]], *, pretty: bool = False) -> None:
+    """月別推移を標準出力する。"""
     sorted_months, account_monthly = summarize_monthly(all_rows)
     if not sorted_months:
         return
 
     print("[月次推移]")
-    print("科目\t" + "\t".join(sorted_months))
+    headers = ["科目", *sorted_months]
+    rows = []
     for account in sorted(account_monthly):
         monthly = account_monthly[account]
-        values = [str(monthly.get(m, 0)) for m in sorted_months]
-        print(f"{account}\t" + "\t".join(values))
+        rows.append([account, *[str(monthly.get(m, 0)) for m in sorted_months]])
+    formatter = format_pretty if pretty else format_tsv
+    print(formatter(headers, rows))
     print()
 
 

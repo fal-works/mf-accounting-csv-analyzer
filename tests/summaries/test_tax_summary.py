@@ -78,6 +78,23 @@ def test_print_summary_outputs_tsv(capsys):
     assert "対象外" in taxes
 
 
+def test_print_summary_outputs_pretty(capsys):
+    rows = [
+        make_simple_row("1", "2025/01/10", "通信費", "普通預金", "1000",
+                        debit_tax="課対仕入10%", credit_tax="対象外"),
+        make_simple_row("2", "2025/01/20", "売上高", "普通預金", "5000",
+                        debit_tax="対象外", credit_tax="課税売上10%"),
+    ]
+
+    print_summary(rows, pretty=True)
+    out = capsys.readouterr().out.strip().splitlines()
+
+    assert out[0] == "[税区分別サマリー]"
+    assert "\t" not in out[1]
+    assert "  " in out[1]
+    assert any("課対仕入10%" in line for line in out[2:])
+
+
 def test_load_target_rows_includes_only_target_year(tmp_path):
     journal_2024 = tmp_path / "2024" / "仕訳帳.csv"
     journal_2025 = tmp_path / "2025" / "仕訳帳.csv"

@@ -5,6 +5,8 @@ from collections import defaultdict
 
 from analysis.common import (
     SKIP_ACCOUNTS_COMMON,
+    format_pretty,
+    format_tsv,
     median,
     parse_amount,
     run_summary_cli,
@@ -46,12 +48,16 @@ def summarize_accounts(all_rows: list[dict[str, str]]) -> list[tuple[str, int, i
     return summaries
 
 
-def print_summary(all_rows: list[dict[str, str]]) -> None:
-    """TSV 形式で勘定科目別サマリーを標準出力する。"""
+def print_summary(all_rows: list[dict[str, str]], *, pretty: bool = False) -> None:
+    """勘定科目別サマリーを標準出力する。"""
     print("[勘定科目別サマリー]")
-    print("科目\t件数\t合計\t平均\t中央値\t最小\t最大")
-    for account, count, total, avg, med, lo, hi in summarize_accounts(all_rows):
-        print(f"{account}\t{count}\t{total}\t{avg:.0f}\t{med:.0f}\t{lo}\t{hi}")
+    headers = ["科目", "件数", "合計", "平均", "中央値", "最小", "最大"]
+    rows = [
+        [account, str(count), str(total), f"{avg:.0f}", f"{med:.0f}", str(lo), str(hi)]
+        for account, count, total, avg, med, lo, hi in summarize_accounts(all_rows)
+    ]
+    formatter = format_pretty if pretty else format_tsv
+    print(formatter(headers, rows))
     print()
 
 

@@ -95,6 +95,22 @@ def test_print_summary_outputs_tsv(capsys):
     assert out[3] == "NTT\t2\t通信費"
 
 
+def test_print_summary_outputs_pretty(capsys):
+    rows = [
+        make_simple_row("1", "2025/01/10", "通信費", "普通預金", "1000", debit_vendor="NTT"),
+        make_simple_row("2", "2025/01/20", "通信費", "普通預金", "2000", debit_vendor="NTT"),
+        make_simple_row("3", "2025/01/25", "新聞図書費", "普通預金", "1500", debit_vendor="Amazon"),
+    ]
+
+    print_summary(rows, pretty=True)
+    out = capsys.readouterr().out.strip().splitlines()
+
+    assert out[0] == "[取引先別サマリー]"
+    assert "\t" not in out[1]
+    assert "  " in out[1]
+    assert out[2].startswith("Amazon")
+
+
 def test_print_summary_omits_accounts_for_no_vendor_label(capsys):
     rows = [
         make_simple_row("1", "2025/01/10", "通信費", "普通預金", "1000"),

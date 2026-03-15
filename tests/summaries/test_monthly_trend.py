@@ -61,6 +61,24 @@ def test_print_summary_outputs_tsv(capsys):
     assert out[3] == "通信費\t1000\t2000"
 
 
+def test_print_summary_outputs_pretty(capsys):
+    rows = [
+        make_simple_row("1", "2025/01/10", "通信費", "普通預金", "1000"),
+        make_simple_row("2", "2025/02/15", "通信費", "普通預金", "2000"),
+        make_simple_row("3", "2025/01/25", "新聞図書費", "普通預金", "1500"),
+    ]
+
+    print_summary(rows, pretty=True)
+    out = capsys.readouterr().out.strip().splitlines()
+
+    assert out[0] == "[月次推移]"
+    assert "\t" not in out[1]
+    assert "  " in out[1]
+    assert out[3].startswith("通信費")
+    assert "1000" in out[3]
+    assert "2000" in out[3]
+
+
 def test_load_target_rows_includes_only_target_year(tmp_path):
     journal_2024 = tmp_path / "2024" / "仕訳帳.csv"
     journal_2025 = tmp_path / "2025" / "仕訳帳.csv"

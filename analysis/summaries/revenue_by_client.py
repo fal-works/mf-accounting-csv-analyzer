@@ -3,7 +3,7 @@
 
 from collections import defaultdict
 
-from analysis.common import parse_amount, run_summary_cli
+from analysis.common import format_pretty, format_tsv, parse_amount, run_summary_cli
 from analysis.journal_columns import (
     CREDIT_ACCOUNT,
     CREDIT_AMOUNT,
@@ -48,12 +48,16 @@ def summarize_revenue_by_client(
     ]
 
 
-def print_summary(all_rows: list[dict[str, str]]) -> None:
-    """TSV 形式で売上先別サマリーを標準出力する。"""
+def print_summary(all_rows: list[dict[str, str]], *, pretty: bool = False) -> None:
+    """売上先別サマリーを標準出力する。"""
     print("[売上先別サマリー]")
-    print("取引先\t件数\t合計")
-    for client, count, total in summarize_revenue_by_client(all_rows):
-        print(f"{client}\t{count}\t{total}")
+    headers = ["取引先", "件数", "合計"]
+    rows = [
+        [client, str(count), str(total)]
+        for client, count, total in summarize_revenue_by_client(all_rows)
+    ]
+    formatter = format_pretty if pretty else format_tsv
+    print(formatter(headers, rows))
     print()
 
 

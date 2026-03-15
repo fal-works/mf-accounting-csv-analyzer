@@ -180,7 +180,8 @@ class TestRunSummaryCli:
 
         seen = []
 
-        def fake_summary(rows):
+        def fake_summary(rows, *, pretty=False):
+            assert pretty is False
             seen.append(rows)
 
         run_summary_cli(fake_summary, "summary")
@@ -193,7 +194,8 @@ class TestRunSummaryCli:
 
         seen = []
 
-        def fake_summary(rows):
+        def fake_summary(rows, *, pretty=False):
+            assert pretty is False
             seen.append(rows)
 
         run_summary_cli(fake_summary, "summary")

@@ -66,7 +66,7 @@ def test_summary_main_returns_zero_when_warnings_exist(monkeypatch, module_name,
     module = import_module(module_name)
 
     monkeypatch.setattr("analysis.common.load_journal", lambda _path: [])
-    monkeypatch.setattr(module, check_func_name, lambda _rows: None)
+    monkeypatch.setattr(module, check_func_name, lambda _rows, *, pretty=False: None)
     monkeypatch.setattr("sys.argv", ["prog", *argv_tail])
 
     module.main()
@@ -80,7 +80,7 @@ def test_summary_main_exits_one_on_data_file_error(monkeypatch, module_name, che
         raise DataFileError("broken")
 
     monkeypatch.setattr("analysis.common.load_journal", raise_data_error)
-    monkeypatch.setattr(module, check_func_name, lambda _rows: None)
+    monkeypatch.setattr(module, check_func_name, lambda _rows, *, pretty=False: None)
     monkeypatch.setattr("sys.argv", ["prog", *argv_tail])
 
     with pytest.raises(SystemExit) as excinfo:
