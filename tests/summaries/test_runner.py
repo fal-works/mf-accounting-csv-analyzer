@@ -1,4 +1,4 @@
-"""analysis.tools.runner のテスト。"""
+"""analysis.summaries.runner のテスト。"""
 
 import csv
 import sys
@@ -8,7 +8,7 @@ import pytest
 
 from analysis.common import DataFileError
 from analysis.journal_columns import JOURNAL_COLUMNS, TX_NO
-from analysis.tools.runner import discover_summaries, main, run_all
+from analysis.summaries.runner import discover_summaries, main, run_all
 from tests.conftest import make_simple_row
 
 JOURNAL_FILE = "仕訳帳.csv"
@@ -59,7 +59,7 @@ class TestRunAll:
             seen.append(f"vendor:{len(rows)}")
 
         monkeypatch.setattr(
-            "analysis.tools.runner.discover_summaries",
+            "analysis.summaries.runner.discover_summaries",
             lambda: [
                 ("account_summary", account_summary, False),
                 ("vendor_summary", vendor_summary, False),
@@ -82,7 +82,7 @@ class TestRunAll:
         seen: list[str] = []
 
         monkeypatch.setattr(
-            "analysis.tools.runner.discover_summaries",
+            "analysis.summaries.runner.discover_summaries",
             lambda: [
                 ("account_summary", lambda rows: seen.append(f"account:{len(rows)}"), False),
                 ("vendor_summary", lambda rows: seen.append(f"vendor:{len(rows)}"), False),
@@ -115,7 +115,7 @@ class TestRunAll:
             seen["multi"] = [row[TX_NO] for row in rows]
 
         monkeypatch.setattr(
-            "analysis.tools.runner.discover_summaries",
+            "analysis.summaries.runner.discover_summaries",
             lambda: [
                 ("account_summary", single_year_summary, False),
                 ("cross_year_summary", multi_year_summary, True),
@@ -137,11 +137,11 @@ class TestRunAll:
         )
 
         monkeypatch.setattr(
-            "analysis.tools.runner.select_journals",
+            "analysis.summaries.runner.select_journals",
             lambda *args, **kwargs: pytest.fail("select_journals should not be called"),
         )
         monkeypatch.setattr(
-            "analysis.tools.runner.discover_summaries",
+            "analysis.summaries.runner.discover_summaries",
             lambda: [("account_summary", lambda rows: None, False)],
         )
 
@@ -167,14 +167,14 @@ class TestRunAll:
 class TestMain:
     def test_runs_and_prints_period(self, monkeypatch, capsys):
         monkeypatch.setattr(
-            "analysis.tools.runner.select_journals",
+            "analysis.summaries.runner.select_journals",
             lambda target_year, *, years=3, data_dir="data": {
                 2023: Path("data/2023/仕訳帳.csv"),
                 2024: Path("data/2024/仕訳帳.csv"),
                 2025: Path("data/2025/仕訳帳.csv"),
             },
         )
-        monkeypatch.setattr("analysis.tools.runner.run_all", lambda *args, **kwargs: ["account_summary"])
+        monkeypatch.setattr("analysis.summaries.runner.run_all", lambda *args, **kwargs: ["account_summary"])
         monkeypatch.setattr(sys, "argv", ["runner.py", "--target", "2025"])
 
         main()
@@ -184,11 +184,11 @@ class TestMain:
 
     def test_exits_one_on_data_file_error(self, monkeypatch):
         monkeypatch.setattr(
-            "analysis.tools.runner.select_journals",
+            "analysis.summaries.runner.select_journals",
             lambda target_year, *, years=3, data_dir="data": {2025: Path("data/2025/仕訳帳.csv")},
         )
         monkeypatch.setattr(
-            "analysis.tools.runner.run_all",
+            "analysis.summaries.runner.run_all",
             lambda *args, **kwargs: (_ for _ in ()).throw(DataFileError("broken")),
         )
         monkeypatch.setattr(sys, "argv", ["runner.py", "--target", "2025"])
@@ -200,7 +200,7 @@ class TestMain:
 
     def test_list_exits_zero(self, monkeypatch, capsys):
         monkeypatch.setattr(
-            "analysis.tools.runner.discover_summaries",
+            "analysis.summaries.runner.discover_summaries",
             lambda: [("account_summary", lambda _rows: None, False)],
         )
         monkeypatch.setattr(sys, "argv", ["runner.py", "--list"])

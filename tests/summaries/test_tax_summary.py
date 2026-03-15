@@ -8,7 +8,7 @@ import pytest
 
 from analysis.common import load_target_rows
 from analysis.journal_columns import JOURNAL_COLUMNS, TX_NO
-from analysis.tools.tax_summary import MULTI_YEAR, main, print_summary, summarize_tax
+from analysis.summaries.tax_summary import MULTI_YEAR, main, print_summary, summarize_tax
 from tests.conftest import make_simple_row
 
 

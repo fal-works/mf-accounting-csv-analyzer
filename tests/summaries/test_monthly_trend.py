@@ -1,4 +1,4 @@
-"""account_summary.py のテスト。"""
+"""monthly_trend.py のテスト。"""
 
 import csv
 import sys
@@ -6,9 +6,9 @@ from pathlib import Path
 
 import pytest
 
-from analysis.common import load_target_rows, median
+from analysis.common import load_target_rows
 from analysis.journal_columns import JOURNAL_COLUMNS, TX_NO
-from analysis.tools.account_summary import MULTI_YEAR, main, print_summary, summarize_accounts
+from analysis.summaries.monthly_trend import MULTI_YEAR, main, print_summary, summarize_monthly
 from tests.conftest import make_simple_row
 
 
@@ -20,39 +20,55 @@ def _write_csv(rows: list[dict], path: Path) -> None:
             writer.writerow(row)
 
 
-def test_summarize_accounts_excludes_skip_accounts():
+def test_summarize_monthly_basic():
     rows = [
         make_simple_row("1", "2025/01/10", "通信費", "普通預金", "1200"),
-        make_simple_row("2", "2025/01/20", "通信費", "普通預金", "3600"),
-        make_simple_row("3", "2025/01/25", "消耗品費", "普通預金", "800"),
-        make_simple_row("4", "2025/01/31", "普通預金", "売掛金", "999999"),
+        make_simple_row("2", "2025/01/20", "通信費", "普通預金", "800"),
+        make_simple_row("3", "2025/02/15", "通信費", "普通預金", "1500"),
+        make_simple_row("4", "2025/02/20", "消耗品費", "普通預金", "3000"),
     ]
 
-    assert summarize_accounts(rows) == [
-        ("消耗品費", 1, 800, 800.0, 800.0, 800, 800),
-        ("通信費", 2, 4800, 2400.0, 2400.0, 1200, 3600),
+    months, account_monthly = summarize_monthly(rows)
+
+    assert months == ["2025/01", "2025/02"]
+    assert account_monthly["通信費"] == {"2025/01": 2000, "2025/02": 1500}
+    assert account_monthly["消耗品費"] == {"2025/02": 3000}
+
+
+def test_summarize_monthly_excludes_skip_accounts():
+    rows = [
+        make_simple_row("1", "2025/01/10", "通信費", "普通預金", "1000"),
+        make_simple_row("2", "2025/01/20", "普通預金", "売掛金", "999999"),
     ]
+
+    months, account_monthly = summarize_monthly(rows)
+
+    assert "普通預金" not in account_monthly
+    assert "売掛金" not in account_monthly
+    assert "通信費" in account_monthly
+
+
+def test_summarize_monthly_empty():
+    months, account_monthly = summarize_monthly([])
+
+    assert months == []
+    assert account_monthly == {}
 
 
 def test_print_summary_outputs_tsv(capsys):
     rows = [
         make_simple_row("1", "2025/01/10", "通信費", "普通預金", "1000"),
-        make_simple_row("2", "2025/01/20", "通信費", "普通預金", "2000"),
+        make_simple_row("2", "2025/02/15", "通信費", "普通預金", "2000"),
         make_simple_row("3", "2025/01/25", "新聞図書費", "普通預金", "1500"),
     ]
 
     print_summary(rows)
     out = capsys.readouterr().out.strip().splitlines()
 
-    assert out[0] == "[勘定科目別サマリー]"
-    assert out[1] == "科目\t件数\t合計\t平均\t中央値\t最小\t最大"
-    assert out[2] == "新聞図書費\t1\t1500\t1500\t1500\t1500\t1500"
-    assert out[3] == "通信費\t2\t3000\t1500\t1500\t1000\t2000"
-
-
-def test_median_handles_even_and_odd_counts():
-    assert median([1, 9, 5]) == 5.0
-    assert median([1, 9, 5, 7]) == 6.0
+    assert out[0] == "[月次推移]"
+    assert out[1] == "科目\t2025/01\t2025/02"
+    assert out[2] == "新聞図書費\t1500\t0"
+    assert out[3] == "通信費\t1000\t2000"
 
 
 def test_load_target_rows_includes_only_target_year(tmp_path):

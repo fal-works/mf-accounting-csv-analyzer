@@ -36,7 +36,7 @@
 ### 即興スクリプトの活用方針
 
 - 即興スクリプト（その場限りの集計・調査用）は `tmp_` プレフィックス付きファイルとして保存してから実行する。
-  チェック処理の試作は `analysis/checks/tmp_*.py`、集計・調査補助は `analysis/tools/tmp_*.py` に置く。
+  チェック処理の試作は `analysis/checks/tmp_*.py`、集計・調査補助は `analysis/summaries/tmp_*.py` に置く。
   このプレフィックスならスクリプトランナーには拾われないので、実装は自由でよい。
 - `uv run python -c "..."` のインライン実行は使わない（コマンド許可制御が難しいため）。
 - スクリプトを書くときは `analysis.common`（`load_journal`, `parse_amount`, `parse_date` 等）や

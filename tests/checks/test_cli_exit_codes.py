@@ -20,14 +20,14 @@ STANDARD_CLI_CASES = [
 
 # run_summary_cli 経由のサマリーツール
 SUMMARY_CLI_CASES = [
-    ("analysis.tools.account_summary", "print_summary", ["dummy.csv"]),
-    ("analysis.tools.account_summary", "print_summary", ["--target", "2025"]),
-    ("analysis.tools.monthly_trend", "print_summary", ["dummy.csv"]),
-    ("analysis.tools.monthly_trend", "print_summary", ["--target", "2025"]),
-    ("analysis.tools.tax_summary", "print_summary", ["dummy.csv"]),
-    ("analysis.tools.tax_summary", "print_summary", ["--target", "2025"]),
-    ("analysis.tools.vendor_summary", "print_summary", ["dummy.csv"]),
-    ("analysis.tools.vendor_summary", "print_summary", ["--target", "2025"]),
+    ("analysis.summaries.account_summary", "print_summary", ["dummy.csv"]),
+    ("analysis.summaries.account_summary", "print_summary", ["--target", "2025"]),
+    ("analysis.summaries.monthly_trend", "print_summary", ["dummy.csv"]),
+    ("analysis.summaries.monthly_trend", "print_summary", ["--target", "2025"]),
+    ("analysis.summaries.tax_summary", "print_summary", ["dummy.csv"]),
+    ("analysis.summaries.tax_summary", "print_summary", ["--target", "2025"]),
+    ("analysis.summaries.vendor_summary", "print_summary", ["dummy.csv"]),
+    ("analysis.summaries.vendor_summary", "print_summary", ["--target", "2025"]),
 ]
 
 

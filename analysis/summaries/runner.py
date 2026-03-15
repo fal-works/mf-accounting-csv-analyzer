@@ -8,16 +8,16 @@ import sys
 from pathlib import Path
 from typing import Callable
 
-import analysis.tools as tools
+import analysis.summaries as summaries
 from analysis.common import DataFileError, load_journal, parse_date, select_journals
 from analysis.journal_columns import TX_DATE
 
 
 def discover_summaries() -> list[tuple[str, Callable, bool]]:
-    """analysis.tools 以下のサマリーツールを検出する。"""
+    """analysis.summaries 以下のサマリーツールを検出する。"""
     found: list[tuple[str, Callable, bool]] = []
 
-    for info in pkgutil.iter_modules(tools.__path__, tools.__name__ + "."):
+    for info in pkgutil.iter_modules(summaries.__path__, summaries.__name__ + "."):
         module_name = info.name
         short_name = module_name.split(".")[-1]
 

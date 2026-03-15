@@ -8,7 +8,7 @@ import pytest
 
 from analysis.common import load_target_rows
 from analysis.journal_columns import JOURNAL_COLUMNS, TX_NO
-from analysis.tools.vendor_summary import MULTI_YEAR, main, print_summary, summarize_vendors
+from analysis.summaries.vendor_summary import MULTI_YEAR, main, print_summary, summarize_vendors
 from tests.conftest import make_simple_row
 
 

@@ -19,11 +19,11 @@
 サマリーで全体像を把握してからチェック結果を評価する。
 
 ```bash
-uv run python -m analysis.tools.runner --target 2025
+uv run python -m analysis.summaries.runner --target 2025
 uv run python -m analysis.checks.runner --target 2025
 ```
 
-- サマリーツールの一覧とそれぞれの目的は [analysis/tools/catalog.md](analysis/tools/catalog.md) を参照。
+- サマリーツールの一覧とそれぞれの目的は [analysis/summaries/catalog.md](analysis/summaries/catalog.md) を参照。
 - チェックスクリプトの一覧とそれぞれの目的は [analysis/checks/catalog.md](analysis/checks/catalog.md) を参照。
 - 個別のサマリー・チェックは `--target 2025` でも `data/2025/仕訳帳.csv` のようなファイルパス指定でも実行できる。
 - 比較期間や選択実行・除外など、ランナーの応用オプションは `--help` を参照。
@@ -49,7 +49,7 @@ uv run python -m analysis.checks.runner --target 2025
 - 同月の他の仕訳との関連確認（売掛金の計上と入金の対応など）
 - ステップ0で確認したメモに関連情報がないか再確認
 - 集計が必要なら、即興スクリプトを `tmp_` プレフィックス付きファイルとして保存してから実行する。
-  チェック処理の試作は `analysis/checks/tmp_*.py`、集計・調査補助は `analysis/tools/tmp_*.py` に置く
+  チェック処理の試作は `analysis/checks/tmp_*.py`、集計・調査補助は `analysis/summaries/tmp_*.py` に置く
 
 ## ステップ4: メモの記録
 
