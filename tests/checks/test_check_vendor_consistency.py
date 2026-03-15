@@ -1,7 +1,7 @@
 """check_vendor_consistency.py のテスト。"""
 
 from analysis.checks.check_vendor_consistency import check_vendor_consistency
-from conftest import make_simple_row
+from tests.conftest import make_simple_row
 
 
 class TestCheckVendorConsistency:

@@ -19,16 +19,14 @@
 サマリーで全体像を把握してからチェック結果を評価する。
 
 ```bash
-uv run python -m analysis.tools.account_summary --target 2025
-uv run python -m analysis.tools.monthly_trend --target 2025
-uv run python -m analysis.tools.vendor_summary --target 2025
-uv run python -m analysis.tools.tax_summary --target 2025
+uv run python -m analysis.tools.runner --target 2025
 uv run python -m analysis.checks.runner --target 2025
 ```
 
-- 個別チェックスクリプトの一覧とそれぞれの目的は [analysis/checks/catalog.md](analysis/checks/catalog.md) を参照。
-- 個別チェックは `--target 2025` でも `data/2025/仕訳帳.csv` のようなファイルパス指定でも実行できる。
-- 期間選択者、個別チェックの選択実行・除外など、ランナーの応用オプションは `--help` を参照。
+- サマリーツールの一覧とそれぞれの目的は [analysis/tools/catalog.md](analysis/tools/catalog.md) を参照。
+- チェックスクリプトの一覧とそれぞれの目的は [analysis/checks/catalog.md](analysis/checks/catalog.md) を参照。
+- 個別のサマリー・チェックは `--target 2025` でも `data/2025/仕訳帳.csv` のようなファイルパス指定でも実行できる。
+- 比較期間や選択実行・除外など、ランナーの応用オプションは `--help` を参照。
 
 ## ステップ2: 結果の評価
 

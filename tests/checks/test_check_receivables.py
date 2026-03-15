@@ -1,7 +1,7 @@
 """check_receivables.py のテスト。"""
 
 from analysis.checks.check_receivables import check_receivables
-from conftest import make_simple_row
+from tests.conftest import make_simple_row
 
 
 class TestCheckReceivables:

@@ -9,7 +9,7 @@ import pytest
 from analysis.checks.runner import discover_checks, main, run_all
 from analysis.common import CheckResult, DataFileError, discover_journals, select_journals
 from analysis.journal_columns import TX_NO, JOURNAL_COLUMNS
-from conftest import make_simple_row
+from tests.conftest import make_simple_row
 
 JOURNAL_FILE = "仕訳帳.csv"
 

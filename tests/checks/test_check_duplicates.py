@@ -1,7 +1,7 @@
 """check_duplicates.py のテスト。"""
 
 from analysis.checks.check_duplicates import check_duplicate_entries
-from conftest import make_simple_row
+from tests.conftest import make_simple_row
 
 
 class TestCheckDuplicates:

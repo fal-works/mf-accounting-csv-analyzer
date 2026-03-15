@@ -1,7 +1,7 @@
 """check_recurring_amount.py のテスト。"""
 
 from analysis.checks.check_recurring_amount import check_recurring_amount
-from conftest import make_simple_row
+from tests.conftest import make_simple_row
 
 
 class TestCheckRecurringAmount:

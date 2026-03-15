@@ -1,7 +1,7 @@
 """check_tax.py のテスト。"""
 
 from analysis.checks.check_tax import check_tax_categories
-from conftest import make_simple_row
+from tests.conftest import make_simple_row
 
 
 class TestCheckTax:

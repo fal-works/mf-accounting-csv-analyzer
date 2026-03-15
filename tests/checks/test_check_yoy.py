@@ -1,7 +1,7 @@
 """check_yoy.py のテスト。"""
 
 from analysis.checks.check_yoy import check_yoy
-from conftest import make_simple_row
+from tests.conftest import make_simple_row
 
 
 class TestCheckYoY:

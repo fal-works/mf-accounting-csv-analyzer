@@ -9,7 +9,7 @@ import pytest
 from analysis.common import load_target_rows
 from analysis.journal_columns import JOURNAL_COLUMNS, TX_NO
 from analysis.tools.vendor_summary import MULTI_YEAR, main, print_summary, summarize_vendors
-from conftest import make_simple_row
+from tests.conftest import make_simple_row
 
 
 def _write_csv(rows: list[dict], path: Path) -> None:
