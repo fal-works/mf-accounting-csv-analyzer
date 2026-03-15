@@ -2,7 +2,7 @@ import http from "node:http";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { text } from "node:stream/consumers";
-import { countDataRows } from "./server-utils.js";
+import { countDataRows, isErrnoException, staticFileErrorResponse } from "./server-utils.js";
 import type { ImportRequest } from "./server-utils.js";
 
 const PORT = 3456;
@@ -65,9 +65,10 @@ const server = http.createServer(async (req, res) => {
       const ext = path.extname(filePath);
       res.writeHead(200, { "Content-Type": MIME[ext] ?? "application/octet-stream" });
       res.end(data);
-    } catch {
-      res.writeHead(404);
-      res.end("Not Found");
+    } catch (e: unknown) {
+      const { status, body } = staticFileErrorResponse(e);
+      res.writeHead(status);
+      res.end(body);
     }
     return;
   }
@@ -114,8 +115,10 @@ async function handleImport(
     try {
       const existing = await fs.readFile(filePath, "utf-8");
       prevRows = countDataRows(existing);
-    } catch {
-      // file doesn't exist yet
+    } catch (e: unknown) {
+      if (!isErrnoException(e) || e.code !== "ENOENT") {
+        throw e;
+      }
     }
 
     await fs.mkdir(yearDir, { recursive: true });

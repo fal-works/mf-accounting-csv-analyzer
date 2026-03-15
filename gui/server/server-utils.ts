@@ -11,3 +11,19 @@ export function countDataRows(csv: string): number {
   // Exclude header and trailing empty lines
   return lines.filter((l, i) => i > 0 && l.trim() !== "").length;
 }
+
+export function isErrnoException(
+  error: unknown,
+): error is NodeJS.ErrnoException {
+  return error instanceof Error;
+}
+
+export function staticFileErrorResponse(error: unknown): {
+  status: 404 | 500;
+  body: "Not Found" | "Internal Server Error";
+} {
+  if (isErrnoException(error) && error.code === "ENOENT") {
+    return { status: 404, body: "Not Found" };
+  }
+  return { status: 500, body: "Internal Server Error" };
+}
