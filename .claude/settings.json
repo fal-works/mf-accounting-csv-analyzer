@@ -9,7 +9,11 @@
       "Bash(curl *)",
       "Bash(wget *)",
       "Bash(git push *)",
-      "Bash(chmod 777 *)"
+      "Bash(chmod 777 *)",
+      "Bash(awk *)",
+      "Bash(xargs *)",
+      "Bash(sed *)",
+      "Bash(cut *)"
     ],
     "allow": [
       "Bash(rg *)",

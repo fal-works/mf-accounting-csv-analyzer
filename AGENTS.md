@@ -66,6 +66,7 @@ Python の実行は `uv run python` に統一する（`uv` が仮想環境と依
 - **データ探索**: `rg`, `grep`, `cat`, `head`, `tail`, `wc`, `ls`
 - **チェック実行・Python**: `uv run python ...`（ランナー、個別スクリプト、即興スクリプト）
 - **テスト**: `uv run pytest`
+- **非推奨コマンド**: `awk`, `sed`, `xargs`
 
 ### GUI開発コマンド
 
