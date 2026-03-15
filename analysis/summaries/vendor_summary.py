@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""仕訳帳の取引先別金額サマリーを出力する。"""
+"""仕訳帳の取引先別サマリーを出力する。"""
 
 from collections import defaultdict
 
@@ -16,14 +16,14 @@ NO_VENDOR_LABEL = "（取引先未入力）"
 
 def summarize_vendors(
     all_rows: list[dict[str, str]],
-) -> list[tuple[str, int, int]]:
-    """取引先ごとの件数・合計を返す。
+) -> list[tuple[str, int, list[str]]]:
+    """取引先ごとの件数・関連勘定科目一覧を返す。
 
     借方・貸方の両方の取引先を集計対象とする。
     取引先が空の行は「（取引先未入力）」として集計する。
     """
     vendor_count: dict[str, int] = defaultdict(int)
-    vendor_total: dict[str, int] = defaultdict(int)
+    vendor_accounts: dict[str, set[str]] = defaultdict(set)
 
     for row in all_rows:
         found = False
@@ -35,7 +35,9 @@ def summarize_vendors(
             if amount is None or amount <= 0:
                 continue
             vendor_count[vendor] += 1
-            vendor_total[vendor] += amount
+            account = row[side.account].strip()
+            if account:
+                vendor_accounts[vendor].add(account)
             found = True
         if not found:
             # どちらのサイドにも取引先がない行は固定ラベルで集計する。
@@ -44,11 +46,13 @@ def summarize_vendors(
             if amount <= 0:
                 continue
             vendor_count[NO_VENDOR_LABEL] += 1
-            vendor_total[NO_VENDOR_LABEL] += amount
+            account = row[DEBIT_SIDE.account].strip()
+            if account:
+                vendor_accounts[NO_VENDOR_LABEL].add(account)
 
     vendors = sorted(vendor_count, key=lambda v: (v == NO_VENDOR_LABEL, v))
     return [
-        (vendor, vendor_count[vendor], vendor_total[vendor])
+        (vendor, vendor_count[vendor], sorted(vendor_accounts[vendor]))
         for vendor in vendors
     ]
 
@@ -56,14 +60,15 @@ def summarize_vendors(
 def print_summary(all_rows: list[dict[str, str]]) -> None:
     """TSV 形式で取引先別サマリーを標準出力する。"""
     print("[取引先別サマリー]")
-    print("取引先\t件数\t合計")
-    for vendor, count, total in summarize_vendors(all_rows):
-        print(f"{vendor}\t{count}\t{total}")
+    print("取引先\t件数\t勘定科目")
+    for vendor, count, accounts in summarize_vendors(all_rows):
+        accounts_display = "（省略）" if vendor == NO_VENDOR_LABEL else ", ".join(accounts)
+        print(f"{vendor}\t{count}\t{accounts_display}")
     print()
 
 
 def main() -> None:
-    run_summary_cli(print_summary, "仕訳帳の取引先別金額サマリー")
+    run_summary_cli(print_summary, "仕訳帳の取引先別サマリー")
 
 
 if __name__ == "__main__":

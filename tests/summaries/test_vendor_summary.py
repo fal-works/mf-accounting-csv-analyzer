@@ -20,8 +20,8 @@ def test_summarize_vendors_basic():
     result = summarize_vendors(rows)
 
     assert result == [
-        ("Amazon", 1, 800),
-        ("NTT", 2, 4800),
+        ("Amazon", 1, ["消耗品費"]),
+        ("NTT", 2, ["通信費"]),
     ]
 
 
@@ -34,8 +34,8 @@ def test_summarize_vendors_counts_both_sides():
     result = summarize_vendors(rows)
 
     assert result == [
-        ("NTT", 1, 1000),
-        ("みずほ銀行", 1, 1000),
+        ("NTT", 1, ["通信費"]),
+        ("みずほ銀行", 1, ["普通預金"]),
     ]
 
 
@@ -49,7 +49,7 @@ def test_summarize_vendors_uses_fixed_label_for_empty_vendor():
 
     assert len(result) == 2
     assert result[0][0] == "NTT"
-    assert result[1] == (NO_VENDOR_LABEL, 1, 1000)
+    assert result[1] == (NO_VENDOR_LABEL, 1, ["通信費"])
 
 
 def test_summarize_vendors_fixed_label_sorted_last():
@@ -72,7 +72,7 @@ def test_summarize_vendors_includes_credit_vendor():
     result = summarize_vendors(rows)
 
     assert len(result) == 1
-    assert result[0] == ("みずほ銀行", 1, 1000)
+    assert result[0] == ("みずほ銀行", 1, ["普通預金"])
 
 
 def test_summarize_vendors_empty():
@@ -90,9 +90,32 @@ def test_print_summary_outputs_tsv(capsys):
     out = capsys.readouterr().out.strip().splitlines()
 
     assert out[0] == "[取引先別サマリー]"
-    assert out[1] == "取引先\t件数\t合計"
-    assert out[2] == "Amazon\t1\t1500"
-    assert out[3] == "NTT\t2\t3000"
+    assert out[1] == "取引先\t件数\t勘定科目"
+    assert out[2] == "Amazon\t1\t新聞図書費"
+    assert out[3] == "NTT\t2\t通信費"
+
+
+def test_print_summary_omits_accounts_for_no_vendor_label(capsys):
+    rows = [
+        make_simple_row("1", "2025/01/10", "通信費", "普通預金", "1000"),
+    ]
+
+    print_summary(rows)
+    out = capsys.readouterr().out.strip().splitlines()
+
+    assert out[2] == f"{NO_VENDOR_LABEL}\t1\t（省略）"
+
+
+def test_print_summary_outputs_multiple_accounts_for_same_vendor(capsys):
+    rows = [
+        make_simple_row("1", "2025/01/10", "通信費", "普通預金", "1000", debit_vendor="NTT"),
+        make_simple_row("2", "2025/01/20", "消耗品費", "未払金", "2000", debit_vendor="NTT"),
+    ]
+
+    print_summary(rows)
+    out = capsys.readouterr().out.strip().splitlines()
+
+    assert out[2] == "NTT\t2\t消耗品費, 通信費"
 
 
 def test_load_target_rows_includes_only_target_year(tmp_path):
