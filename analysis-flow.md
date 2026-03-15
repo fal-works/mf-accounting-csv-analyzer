@@ -19,25 +19,30 @@
 
 ```bash
 # チェック一括実行（推奨）
-uv run python -m analysis.checks.runner data/*/仕訳帳.csv
+uv run python -m analysis.checks.runner --target 2025
 
 # チェック選択実行・除外
-uv run python -m analysis.checks.runner data/2025/仕訳帳.csv --only check_tax,check_dates
-uv run python -m analysis.checks.runner data/*/仕訳帳.csv --skip check_yoy
+uv run python -m analysis.checks.runner --target 2025 --only check_tax,check_dates
+uv run python -m analysis.checks.runner --target 2025 --skip check_yoy
+uv run python -m analysis.checks.runner --target 2025 --years 5
 
 # チェック一覧表示
 uv run python -m analysis.checks.runner --list
-
-# チェック個別実行
-uv run python analysis/checks/check_tax.py data/2025/仕訳帳.csv
 
 # 科目別サマリー
 uv run python -m analysis.tools.account_summary data/*/仕訳帳.csv
 ```
 
-全年度横断でまず傾向を掴み、詳細分析は類似した期間（直近3年など）に絞ると偽陽性が減る。
+個別チェックスクリプトの一覧とそれぞれの目的は [analysis/checks/catalog.md](analysis/checks/catalog.md) を参照。
 
-チェックスクリプトの一覧とそれぞれの目的は [analysis/checks/catalog.md](analysis/checks/catalog.md) を参照。
+### 期間選択の指針
+
+- チェックスクリプトの種類として、対象年度だけで完結するものと、過去年度との比較が必要なものがある。
+- `--target` を指定すると、ランナーが `data/` 以下から必要なデータを自動選定し、
+  チェックの種類に応じて適切な範囲のデータを渡す。
+- 複数年度比較に使う期間は `--years` で指定可能だが、
+  デフォルトで `3` （対象年度を含む直近3年）となっており、通常はこれで十分。
+  全年度横断は事業規模の変動期などを含みやすく、偽陽性が増える。
 
 ## ステップ2: 結果の評価
 

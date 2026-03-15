@@ -2,9 +2,11 @@
 """チェックスクリプトの自動検出・一括実行ランナー。
 
 使い方:
-    uv run python -m analysis.checks.runner <仕訳帳.csv> [<仕訳帳.csv> ...]
+    uv run python -m analysis.checks.runner --target 2025
 
 オプション:
+    --target YEAR        分析対象年度
+    --years N            比較期間の年数（デフォルト: 3）
     --only NAME[,NAME]   指定したチェックのみ実行（例: --only check_tax,check_dates）
     --skip NAME[,NAME]   指定したチェックをスキップ
     --list               利用可能なチェック一覧を表示して終了
@@ -16,12 +18,20 @@
 
 import argparse
 import importlib
+import json
 import pkgutil
 import sys
+from pathlib import Path
 from typing import Callable
 
 import analysis.checks as checks
-from analysis.common import CheckResult, DataFileError, load_journal, print_header
+from analysis.common import CheckResult, DataFileError, load_journal, parse_date, print_header
+from analysis.journal_columns import TX_DATE
+
+_JOURNAL_SCHEMA = json.loads(
+    (Path(__file__).resolve().parents[2] / "schema" / "journal.json").read_text(encoding="utf-8")
+)
+_JOURNAL_SAVE_NAME = _JOURNAL_SCHEMA["saveName"]
 
 
 def discover_checks() -> list[tuple[str, Callable, bool]]:
@@ -61,9 +71,47 @@ def discover_checks() -> list[tuple[str, Callable, bool]]:
     return sorted(found, key=lambda x: x[0])
 
 
+def discover_journals(data_dir: str = "data") -> dict[int, Path]:
+    """data/{年度}/仕訳帳.csv を自動検出し、{年度: パス} を返す。"""
+    journals: dict[int, Path] = {}
+
+    for path in sorted(Path(data_dir).glob(f"*/{_JOURNAL_SAVE_NAME}")):
+        try:
+            year = int(path.parent.name)
+        except ValueError:
+            continue
+        journals[year] = path
+
+    if not journals:
+        raise DataFileError(f"仕訳帳CSVが見つかりません: {data_dir}/*/{_JOURNAL_SAVE_NAME}")
+
+    return journals
+
+
+def select_journals(target_year: int, *, years: int = 3, data_dir: str = "data") -> dict[int, Path]:
+    """対象年度と比較期間から使用する仕訳帳を選定する。"""
+    if years < 1:
+        raise DataFileError("--years には 1 以上を指定してください")
+
+    discovered = discover_journals(data_dir)
+    if target_year not in discovered:
+        raise DataFileError(f"対象年度の仕訳帳CSVが見つかりません: {target_year}")
+
+    start_year = target_year - years + 1
+    selected = {
+        year: path
+        for year, path in discovered.items()
+        if start_year <= year <= target_year
+    }
+    return dict(sorted(selected.items()))
+
+
 def run_all(
-    journal_paths: list[str],
+    target_year: int,
     *,
+    years: int = 3,
+    data_dir: str = "data",
+    selected_journals: dict[int, Path] | None = None,
     only: set[str] | None = None,
     skip: set[str] | None = None,
 ) -> dict[str, CheckResult]:
@@ -74,10 +122,18 @@ def run_all(
     if only is not None:
         available = [(n, fn, m) for n, fn, m in available if n in only]
 
-    # データ読み込み
+    selected_journals = selected_journals or select_journals(
+        target_year, years=years, data_dir=data_dir
+    )
+
     all_rows: list[dict] = []
-    for path in journal_paths:
+    for path in selected_journals.values():
         all_rows.extend(load_journal(path))
+
+    target_rows = [
+        row for row in all_rows
+        if (d := parse_date(row[TX_DATE])) is not None and d.year == target_year
+    ]
 
     results: dict[str, CheckResult] = {}
 
@@ -86,12 +142,8 @@ def run_all(
             results[name] = CheckResult(0, skipped=True, reason="--skip で除外")
             continue
 
-        if multi_year and len(journal_paths) < 2:
-            # 複数年度チェックだがデータが1年度分しかない場合はそのまま実行
-            # （チェック関数自体がスキップを判断する）
-            pass
-
-        results[name] = check_fn(all_rows)
+        rows = all_rows if multi_year else target_rows
+        results[name] = check_fn(rows)
 
     return results
 
@@ -123,7 +175,8 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="チェックスクリプト一括実行ランナー",
     )
-    parser.add_argument("journals", nargs="*", help="仕訳帳CSVファイルのパス（複数可）")
+    parser.add_argument("--target", type=int, help="分析対象年度")
+    parser.add_argument("--years", type=int, default=3, help="比較期間の年数（デフォルト: 3）")
     parser.add_argument("--only", help="実行するチェック名（カンマ区切り）")
     parser.add_argument("--skip", help="スキップするチェック名（カンマ区切り）")
     parser.add_argument("--list", action="store_true", help="利用可能なチェック一覧を表示")
@@ -136,14 +189,24 @@ def main() -> None:
             print(f"  {name} ({label})")
         sys.exit(0)
 
-    if not args.journals:
-        parser.error("仕訳帳CSVファイルを指定してください")
+    if args.target is None:
+        parser.error("--target を指定してください")
 
     only = set(args.only.split(",")) if args.only else None
     skip = set(args.skip.split(",")) if args.skip else None
 
     try:
-        results = run_all(args.journals, only=only, skip=skip)
+        selected_journals = select_journals(args.target, years=args.years)
+        selected_years = sorted(selected_journals)
+        print(f"対象年度: {args.target}  期間: {selected_years[0]}-{selected_years[-1]} ({len(selected_years)}年分)")
+        print()
+        results = run_all(
+            args.target,
+            years=args.years,
+            selected_journals=selected_journals,
+            only=only,
+            skip=skip,
+        )
     except DataFileError as e:
         print(f"エラー: {e}", file=sys.stderr)
         sys.exit(1)

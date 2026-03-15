@@ -18,7 +18,7 @@
 ### 基本フロー
 
 1. `data/memo.md` および `data/{年度}/memo.md` で既知情報を確認
-2. `uv run python -m analysis.checks.runner data/*/仕訳帳.csv` で全チェック実行
+2. `uv run python -m analysis.checks.runner --target {対象年度}` で全チェック実行
 3. 警告を偽陽性と要確認に分類
 4. 要確認の取引を `rg` で元データと照合
 5. 発見事項・偽陽性をメモに記録
