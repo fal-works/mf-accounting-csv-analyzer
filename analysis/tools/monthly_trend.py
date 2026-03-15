@@ -8,11 +8,13 @@ from collections import defaultdict
 from analysis.common import (
     DataFileError,
     SKIP_ACCOUNTS_COMMON,
+    add_journal_args,
     load_journal,
+    load_target_rows,
     month_key,
     parse_amount,
     parse_date,
-    select_journals,
+    resolve_journals,
 )
 from analysis.journal_columns import SIDES, TX_DATE
 
@@ -67,36 +69,18 @@ def print_monthly(all_rows: list[dict[str, str]]) -> None:
     print()
 
 
-def load_target_rows(target_year: int, *, years: int = 3, data_dir: str = "data") -> list[dict[str, str]]:
-    """対象年度の仕訳のみを読み込む。"""
-    all_rows: list[dict[str, str]] = []
-    for path in select_journals(target_year, years=years, data_dir=data_dir).values():
-        all_rows.extend(load_journal(path))
-
-    return [
-        row for row in all_rows
-        if (d := parse_date(row[TX_DATE])) is not None and d.year == target_year
-    ]
-
-
 def main() -> None:
     parser = argparse.ArgumentParser(description="仕訳帳の勘定科目別・月別金額推移")
-    parser.add_argument("journals", nargs="*", help="仕訳帳CSVファイルのパス（複数可）")
-    parser.add_argument("--target", type=int, help="分析対象年度")
-    parser.add_argument("--years", type=int, default=3, help="比較期間の年数（デフォルト: 3）")
+    add_journal_args(parser)
     args = parser.parse_args()
 
     try:
-        if args.target is not None and args.journals:
-            parser.error("--target と仕訳帳CSVファイルのパスは同時に指定できません")
-        if args.target is None and not args.journals:
-            parser.error("--target または仕訳帳CSVファイルのパスを指定してください")
-
-        if args.target is not None:
-            all_rows = load_target_rows(args.target, years=args.years)
+        resolved = resolve_journals(args, parser)
+        if resolved.target_year is not None:
+            all_rows = load_target_rows(resolved.target_year, years=args.years)
         else:
             all_rows = []
-            for path in args.journals:
+            for path in resolved.paths:
                 all_rows.extend(load_journal(path))
     except DataFileError as e:
         print(f"エラー: {e}", file=sys.stderr)

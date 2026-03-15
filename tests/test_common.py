@@ -1,5 +1,6 @@
 """common.py のユニットテスト。"""
 
+import argparse
 from datetime import date
 from pathlib import Path
 
@@ -7,14 +8,20 @@ import pytest
 
 from analysis.common import (
     SKIP_ACCOUNTS_COMMON,
+    ResolvedJournals,
     CheckResult,
     DataFileError,
+    add_journal_args,
+    load_target_rows,
     month_key,
     parse_amount,
     parse_date,
     read_csv,
+    resolve_journals,
     run_check_cli,
 )
+from analysis.journal_columns import JOURNAL_COLUMNS, TX_NO
+from conftest import make_simple_row
 
 
 class TestParseDate:
@@ -116,3 +123,94 @@ class TestRunCheckCli:
         run_check_cli(fake_check, "multi", multi_file=True)
 
         assert seen == [[{"path": "a.csv"}, {"path": "b.csv"}]]
+
+    def test_single_file_target_loads_only_target_year_file(self, monkeypatch):
+        loaded_paths = []
+        monkeypatch.setattr(
+            "analysis.common.resolve_journals",
+            lambda _args, _parser: ResolvedJournals(2025, Path("2025.csv"), [Path("2023.csv"), Path("2025.csv")]),
+        )
+        monkeypatch.setattr(
+            "analysis.common.load_journal",
+            lambda path: loaded_paths.append(Path(path).name) or [{"path": Path(path).name}],
+        )
+        monkeypatch.setattr("sys.argv", ["prog", "--target", "2025"])
+
+        seen = []
+
+        def fake_check(rows):
+            seen.append(rows)
+            return CheckResult(0)
+
+        run_check_cli(fake_check, "single")
+
+        assert loaded_paths == ["2025.csv"]
+        assert seen == [[{"path": "2025.csv"}]]
+
+    def test_multi_file_target_loads_all_selected_files(self, monkeypatch):
+        monkeypatch.setattr(
+            "analysis.common.resolve_journals",
+            lambda _args, _parser: ResolvedJournals(2025, Path("2025.csv"), [Path("2024.csv"), Path("2025.csv")]),
+        )
+        monkeypatch.setattr(
+            "analysis.common.load_journal",
+            lambda path: [{"path": Path(path).name}],
+        )
+        monkeypatch.setattr("sys.argv", ["prog", "--target", "2025"])
+
+        seen = []
+
+        def fake_check(rows):
+            seen.append(rows)
+            return CheckResult(0)
+
+        run_check_cli(fake_check, "multi", multi_file=True)
+
+        assert seen == [[{"path": "2024.csv"}, {"path": "2025.csv"}]]
+
+
+class TestJournalArgs:
+    def test_resolve_journals_rejects_target_and_paths_together(self):
+        parser = argparse.ArgumentParser()
+        add_journal_args(parser)
+
+        with pytest.raises(SystemExit) as excinfo:
+            resolve_journals(parser.parse_args(["--target", "2025", "dummy.csv"]), parser)
+
+        assert excinfo.value.code == 2
+
+    def test_resolve_journals_requires_target_or_path(self):
+        parser = argparse.ArgumentParser()
+        add_journal_args(parser)
+
+        with pytest.raises(SystemExit) as excinfo:
+            resolve_journals(parser.parse_args([]), parser)
+
+        assert excinfo.value.code == 2
+
+
+class TestLoadTargetRows:
+    def test_includes_only_target_year(self, tmp_path):
+        journal_2024 = tmp_path / "2024" / "仕訳帳.csv"
+        journal_2025 = tmp_path / "2025" / "仕訳帳.csv"
+        journal_2024.parent.mkdir()
+        journal_2025.parent.mkdir()
+
+        with open(journal_2024, "w", encoding="utf-8", newline="") as f:
+            import csv
+
+            writer = csv.DictWriter(f, fieldnames=JOURNAL_COLUMNS)
+            writer.writeheader()
+            writer.writerow(make_simple_row("2024", "2024/12/31", "通信費", "普通預金", "1000"))
+
+        with open(journal_2025, "w", encoding="utf-8", newline="") as f:
+            import csv
+
+            writer = csv.DictWriter(f, fieldnames=JOURNAL_COLUMNS)
+            writer.writeheader()
+            writer.writerow(make_simple_row("cross", "2024/12/31", "消耗品費", "普通預金", "500"))
+            writer.writerow(make_simple_row("2025", "2025/01/10", "通信費", "普通預金", "2000"))
+
+        rows = load_target_rows(2025, years=2, data_dir=str(tmp_path))
+
+        assert [row[TX_NO] for row in rows] == ["2025"]

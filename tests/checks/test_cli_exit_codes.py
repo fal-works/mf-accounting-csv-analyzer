@@ -21,6 +21,13 @@ STANDARD_CLI_CASES = [
 # 独自 main() を持つスクリプト — モジュール側の load_journal も patch が必要
 CUSTOM_MAIN_CASES = [
     ("analysis.tools.account_summary", "print_summary", ["dummy.csv"]),
+    ("analysis.tools.account_summary", "print_summary", ["--target", "2025"]),
+    ("analysis.tools.monthly_trend", "print_monthly", ["dummy.csv"]),
+    ("analysis.tools.monthly_trend", "print_monthly", ["--target", "2025"]),
+    ("analysis.tools.tax_summary", "print_summary", ["dummy.csv"]),
+    ("analysis.tools.tax_summary", "print_summary", ["--target", "2025"]),
+    ("analysis.tools.vendor_summary", "print_summary", ["dummy.csv"]),
+    ("analysis.tools.vendor_summary", "print_summary", ["--target", "2025"]),
 ]
 
 

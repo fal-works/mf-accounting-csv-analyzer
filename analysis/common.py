@@ -8,7 +8,7 @@ from datetime import date, datetime
 from pathlib import Path
 from typing import Callable, NamedTuple
 
-from analysis.journal_columns import JOURNAL_COLUMNS
+from analysis.journal_columns import JOURNAL_COLUMNS, TX_DATE
 
 _JOURNAL_SCHEMA = json.loads(
     (Path(__file__).resolve().parents[1] / "schema" / "journal.json").read_text(encoding="utf-8")
@@ -25,6 +25,13 @@ class CheckResult(NamedTuple):
 
 class DataFileError(Exception):
     """データファイルの読み込みエラー。"""
+
+
+class ResolvedJournals(NamedTuple):
+    """CLI から解決した仕訳帳パス群。"""
+    target_year: int | None
+    target_path: Path | None
+    paths: list[Path]
 
 
 def read_csv(path: str | Path) -> list[dict[str, str]]:
@@ -83,6 +90,43 @@ def select_journals(target_year: int, *, years: int = 3, data_dir: str = "data")
     return dict(sorted(selected.items()))
 
 
+def add_journal_args(parser: argparse.ArgumentParser, *, allow_multiple_paths: bool = True) -> None:
+    """仕訳帳CLIで共通利用する引数を追加する。"""
+    nargs = "*" if allow_multiple_paths else "?"
+    help_text = "仕訳帳CSVファイルのパス（複数可）" if allow_multiple_paths else "仕訳帳CSVファイルのパス"
+    parser.add_argument("journals", nargs=nargs, help=help_text)
+    parser.add_argument("--target", type=int, help="分析対象年度")
+    parser.add_argument("--years", type=int, default=3, help="比較期間の年数（デフォルト: 3）")
+
+
+def resolve_journals(args: argparse.Namespace, parser: argparse.ArgumentParser) -> ResolvedJournals:
+    """argparse の結果から仕訳帳パスを解決する。"""
+    journals = [Path(path) for path in args.journals]
+
+    if args.target is not None and journals:
+        parser.error("--target と仕訳帳CSVファイルのパスは同時に指定できません")
+    if args.target is None and not journals:
+        parser.error("--target または仕訳帳CSVファイルのパスを指定してください")
+
+    if args.target is not None:
+        selected = select_journals(args.target, years=args.years)
+        return ResolvedJournals(args.target, selected[args.target], list(selected.values()))
+
+    return ResolvedJournals(None, None, journals)
+
+
+def load_target_rows(target_year: int, *, years: int = 3, data_dir: str = "data") -> list[dict[str, str]]:
+    """比較期間をロードしつつ、対象年度の仕訳だけを返す。"""
+    all_rows: list[dict[str, str]] = []
+    for path in select_journals(target_year, years=years, data_dir=data_dir).values():
+        all_rows.extend(load_journal(path))
+
+    return [
+        row for row in all_rows
+        if (d := parse_date(row[TX_DATE])) is not None and d.year == target_year
+    ]
+
+
 def run_check_cli(
     check_fn: Callable[[list[dict[str, str]]], CheckResult],
     description: str,
@@ -91,19 +135,18 @@ def run_check_cli(
 ) -> None:
     """標準的なチェックCLIを実行する。"""
     parser = argparse.ArgumentParser(description=description)
-    if multi_file:
-        parser.add_argument("journals", nargs="+", help="仕訳帳CSVファイルのパス（複数可）")
-    else:
-        parser.add_argument("journal", help="仕訳帳CSVファイルのパス")
+    add_journal_args(parser, allow_multiple_paths=multi_file)
     args = parser.parse_args()
 
     try:
+        resolved = resolve_journals(args, parser)
         if multi_file:
             rows: list[dict[str, str]] = []
-            for path in args.journals:
+            for path in resolved.paths:
                 rows.extend(load_journal(path))
         else:
-            rows = load_journal(args.journal)
+            path = resolved.target_path if resolved.target_path is not None else resolved.paths[0]
+            rows = load_journal(path)
     except DataFileError as e:
         print(f"エラー: {e}", file=sys.stderr)
         sys.exit(1)

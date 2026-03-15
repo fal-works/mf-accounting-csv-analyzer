@@ -27,6 +27,7 @@ uv run python -m analysis.checks.runner --target 2025
 ```
 
 - 個別チェックスクリプトの一覧とそれぞれの目的は [analysis/checks/catalog.md](analysis/checks/catalog.md) を参照。
+- 個別チェックは `--target 2025` でも `data/2025/仕訳帳.csv` のようなファイルパス指定でも実行できる。
 - 期間選択者、個別チェックの選択実行・除外など、ランナーの応用オプションは `--help` を参照。
 
 ## ステップ2: 結果の評価
