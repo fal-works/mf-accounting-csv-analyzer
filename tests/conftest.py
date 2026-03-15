@@ -1,5 +1,8 @@
 """テスト共通のフィクスチャとヘルパー。"""
 
+import csv
+from pathlib import Path
+
 from analysis.journal_columns import (
     CREDIT_ACCOUNT,
     CREDIT_AMOUNT,
@@ -61,3 +64,12 @@ def make_simple_row(
             MEMO: memo,
         }
     )
+
+
+def write_csv(rows: list[dict[str, str]], path: Path) -> None:
+    """仕訳帳 CSV をテスト用に書き出す。"""
+    with open(path, "w", encoding="utf-8", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=JOURNAL_COLUMNS)
+        writer.writeheader()
+        for row in rows:
+            writer.writerow(row)

@@ -1,26 +1,16 @@
 """analysis.summaries.runner のテスト。"""
 
-import csv
 import sys
 from pathlib import Path
 
 import pytest
 
 from analysis.common import DataFileError
-from analysis.journal_columns import JOURNAL_COLUMNS, TX_NO
+from analysis.journal_columns import TX_NO
 from analysis.summaries.runner import discover_summaries, main, run_all
-from tests.conftest import make_simple_row
+from tests.conftest import make_simple_row, write_csv
 
 JOURNAL_FILE = "仕訳帳.csv"
-
-
-def _write_csv(rows: list[dict], path: Path) -> None:
-    with open(path, "w", encoding="utf-8", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=JOURNAL_COLUMNS)
-        writer.writeheader()
-        for row in rows:
-            writer.writerow(row)
-
 
 class TestDiscoverSummaries:
     def test_discovers_known_summaries(self):
@@ -47,7 +37,7 @@ class TestRunAll:
     def test_run_with_only(self, tmp_path, monkeypatch):
         journal = tmp_path / "2025" / JOURNAL_FILE
         journal.parent.mkdir()
-        _write_csv(
+        write_csv(
             [make_simple_row("1", "2025/01/15", "通信費", "普通預金", "5000")],
             journal,
         )
@@ -76,7 +66,7 @@ class TestRunAll:
     def test_run_with_skip(self, tmp_path, monkeypatch):
         journal = tmp_path / "2025" / JOURNAL_FILE
         journal.parent.mkdir()
-        _write_csv(
+        write_csv(
             [make_simple_row("1", "2025/01/15", "通信費", "普通預金", "5000")],
             journal,
         )
@@ -103,7 +93,7 @@ class TestRunAll:
         }
         for year, path in paths.items():
             path.parent.mkdir()
-            _write_csv(
+            write_csv(
                 [make_simple_row(str(year), f"{year}/01/15", "通信費", "普通預金", "1000")],
                 path,
             )
@@ -133,7 +123,7 @@ class TestRunAll:
     def test_uses_selected_journals_without_rediscovery(self, tmp_path, monkeypatch):
         journal = tmp_path / "2025" / JOURNAL_FILE
         journal.parent.mkdir()
-        _write_csv(
+        write_csv(
             [make_simple_row("2025", "2025/02/01", "通信費", "普通預金", "1000")],
             journal,
         )
@@ -157,7 +147,7 @@ class TestRunAll:
     def test_raises_when_target_year_missing(self, tmp_path):
         journal = tmp_path / "2024" / JOURNAL_FILE
         journal.parent.mkdir()
-        _write_csv(
+        write_csv(
             [make_simple_row("1", "2024/01/15", "通信費", "普通預金", "1000")],
             journal,
         )

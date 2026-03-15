@@ -1,13 +1,11 @@
 """filter_journal.py のテスト。"""
 
-import csv
 import sys
 from datetime import date
-from pathlib import Path
 
 import pytest
 
-from analysis.journal_columns import CREDIT_AMOUNT, DEBIT_AMOUNT, JOURNAL_COLUMNS
+from analysis.journal_columns import CREDIT_AMOUNT, DEBIT_AMOUNT
 from analysis.filters.filter_journal import (
     FilterCondition,
     MULTI_YEAR,
@@ -16,15 +14,7 @@ from analysis.filters.filter_journal import (
     match_row,
     print_rows,
 )
-from tests.conftest import make_simple_row
-
-
-def _write_csv(rows: list[dict[str, str]], path: Path) -> None:
-    with open(path, "w", encoding="utf-8", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=JOURNAL_COLUMNS)
-        writer.writeheader()
-        for row in rows:
-            writer.writerow(row)
+from tests.conftest import make_simple_row, write_csv
 
 
 @pytest.fixture
@@ -162,7 +152,7 @@ def test_main_rejects_side_only(monkeypatch):
 def test_main_filters_target_year_csv(tmp_path, monkeypatch, capsys):
     journal = tmp_path / "data" / "2025" / "仕訳帳.csv"
     journal.parent.mkdir(parents=True)
-    _write_csv(
+    write_csv(
         [
             make_simple_row("1", "2025/06/05", "旅費交通費", "未払金", "12000", summary="タクシー代"),
             make_simple_row("2", "2025/06/20", "通信費", "普通預金", "5000", summary="サーバー代"),
@@ -182,7 +172,7 @@ def test_main_filters_target_year_csv(tmp_path, monkeypatch, capsys):
 
 def test_main_accepts_single_journal_path_argument(tmp_path, monkeypatch, capsys):
     journal = tmp_path / "sample.csv"
-    _write_csv(
+    write_csv(
         [
             make_simple_row("1", "2025/06/05", "旅費交通費", "未払金", "12000", summary="タクシー代"),
             make_simple_row("2", "2025/06/20", "通信費", "普通預金", "5000", summary="サーバー代"),

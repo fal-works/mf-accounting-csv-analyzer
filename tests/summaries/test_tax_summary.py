@@ -1,23 +1,13 @@
 """tax_summary.py のテスト。"""
 
-import csv
 import sys
-from pathlib import Path
 
 import pytest
 
 from analysis.common import load_target_rows
-from analysis.journal_columns import JOURNAL_COLUMNS, TX_NO
+from analysis.journal_columns import TX_NO
 from analysis.summaries.tax_summary import MULTI_YEAR, main, print_summary, summarize_tax
-from tests.conftest import make_simple_row
-
-
-def _write_csv(rows: list[dict], path: Path) -> None:
-    with open(path, "w", encoding="utf-8", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=JOURNAL_COLUMNS)
-        writer.writeheader()
-        for row in rows:
-            writer.writerow(row)
+from tests.conftest import make_simple_row, write_csv
 
 
 def test_summarize_tax_basic():
@@ -93,8 +83,8 @@ def test_load_target_rows_includes_only_target_year(tmp_path):
     journal_2025 = tmp_path / "2025" / "仕訳帳.csv"
     journal_2024.parent.mkdir()
     journal_2025.parent.mkdir()
-    _write_csv([make_simple_row("2024", "2024/12/31", "通信費", "普通預金", "1000")], journal_2024)
-    _write_csv(
+    write_csv([make_simple_row("2024", "2024/12/31", "通信費", "普通預金", "1000")], journal_2024)
+    write_csv(
         [
             make_simple_row("cross", "2024/12/31", "消耗品費", "普通預金", "500"),
             make_simple_row("2025", "2025/01/10", "通信費", "普通預金", "2000"),
