@@ -6,12 +6,11 @@ from collections import defaultdict
 from analysis.common import (
     parse_amount,
     run_summary_cli,
+    vendor_label,
 )
-from analysis.journal_columns import SIDES
+from analysis.journal_columns import SIDES, SUMMARY
 
 MULTI_YEAR = False
-
-NO_VENDOR_LABEL = "（取引先なし）"
 
 
 def summarize_vendors(
@@ -20,7 +19,7 @@ def summarize_vendors(
     """取引先ごとの件数・合計を返す。
 
     借方・貸方の両方の取引先を集計対象とする。
-    取引先が空の行は「（取引先なし）」として集計する。
+    取引先が空の行は摘要から代替ラベルを生成して集計する。
     """
     vendor_count: dict[str, int] = defaultdict(int)
     vendor_total: dict[str, int] = defaultdict(int)
@@ -38,16 +37,19 @@ def summarize_vendors(
             vendor_total[vendor] += amount
             found = True
         if not found:
-            # どちらのサイドにも取引先がない行は1件として集計する
+            # どちらのサイドにも取引先がない行は摘要で代替する
+            label = vendor_label("", row[SUMMARY])
+            if label is None:
+                continue
             amount = max(
                 (parse_amount(row[side.amount]) or 0 for side in SIDES),
                 default=0,
             )
             if amount > 0:
-                vendor_count[NO_VENDOR_LABEL] += 1
-                vendor_total[NO_VENDOR_LABEL] += amount
+                vendor_count[label] += 1
+                vendor_total[label] += amount
 
-    vendors = sorted(vendor_count, key=lambda v: (v == NO_VENDOR_LABEL, v))
+    vendors = sorted(vendor_count, key=lambda v: (v.startswith("摘要: "), v))
     return [
         (vendor, vendor_count[vendor], vendor_total[vendor])
         for vendor in vendors

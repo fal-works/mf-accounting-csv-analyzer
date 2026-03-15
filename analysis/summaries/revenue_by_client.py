@@ -3,7 +3,7 @@
 
 from collections import defaultdict
 
-from analysis.common import parse_amount, run_summary_cli
+from analysis.common import parse_amount, run_summary_cli, vendor_label
 from analysis.journal_columns import (
     CREDIT_ACCOUNT,
     CREDIT_AMOUNT,
@@ -11,11 +11,11 @@ from analysis.journal_columns import (
     DEBIT_ACCOUNT,
     DEBIT_AMOUNT,
     DEBIT_VENDOR,
+    SUMMARY,
 )
 
 MULTI_YEAR = False
 
-NO_CLIENT_LABEL = "（取引先なし）"
 REVENUE_ACCOUNT = "売上高"
 
 
@@ -30,18 +30,22 @@ def summarize_revenue_by_client(
         if row[CREDIT_ACCOUNT].strip() == REVENUE_ACCOUNT:
             amount = parse_amount(row[CREDIT_AMOUNT])
             if amount is not None:
-                client = row[CREDIT_VENDOR].strip() or NO_CLIENT_LABEL
+                client = vendor_label(row[CREDIT_VENDOR], row[SUMMARY])
+                if client is None:
+                    continue
                 client_count[client] += 1
                 client_total[client] += amount
 
         if row[DEBIT_ACCOUNT].strip() == REVENUE_ACCOUNT:
             amount = parse_amount(row[DEBIT_AMOUNT])
             if amount is not None:
-                client = row[DEBIT_VENDOR].strip() or NO_CLIENT_LABEL
+                client = vendor_label(row[DEBIT_VENDOR], row[SUMMARY])
+                if client is None:
+                    continue
                 client_count[client] += 1
                 client_total[client] -= amount
 
-    clients = sorted(client_count, key=lambda client: (client == NO_CLIENT_LABEL, client))
+    clients = sorted(client_count, key=lambda client: (client.startswith("摘要: "), client))
     return [
         (client, client_count[client], client_total[client])
         for client in clients

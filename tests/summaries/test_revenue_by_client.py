@@ -10,7 +10,6 @@ from analysis.common import load_target_rows
 from analysis.journal_columns import JOURNAL_COLUMNS, TX_NO
 from analysis.summaries.revenue_by_client import (
     MULTI_YEAR,
-    NO_CLIENT_LABEL,
     main,
     print_summary,
     summarize_revenue_by_client,
@@ -41,9 +40,9 @@ def test_summarize_revenue_by_client_basic():
     ]
 
 
-def test_summarize_revenue_by_client_uses_fixed_label_for_empty_client():
+def test_summarize_revenue_by_client_uses_summary_for_empty_client():
     rows = [
-        make_simple_row("1", "2025/01/10", "売掛金", "売上高", "1000"),
+        make_simple_row("1", "2025/01/10", "売掛金", "売上高", "1000", summary="1月分業務委託"),
         make_simple_row("2", "2025/01/20", "売掛金", "売上高", "2000", credit_vendor="デンキヤギ株式会社"),
     ]
 
@@ -51,8 +50,19 @@ def test_summarize_revenue_by_client_uses_fixed_label_for_empty_client():
 
     assert result == [
         ("デンキヤギ株式会社", 1, 2000),
-        (NO_CLIENT_LABEL, 1, 1000),
+        ("摘要: 1月分業務委託", 1, 1000),
     ]
+
+
+def test_summarize_revenue_by_client_skips_row_without_client_and_summary():
+    rows = [
+        make_simple_row("1", "2025/01/10", "売掛金", "売上高", "1000"),
+        make_simple_row("2", "2025/01/20", "売掛金", "売上高", "2000", credit_vendor="デンキヤギ株式会社"),
+    ]
+
+    result = summarize_revenue_by_client(rows)
+
+    assert result == [("デンキヤギ株式会社", 1, 2000)]
 
 
 def test_summarize_revenue_by_client_uses_both_credit_and_debit_revenue():
@@ -104,7 +114,7 @@ def test_print_summary_outputs_tsv(capsys):
         make_simple_row("1", "2025/01/10", "売掛金", "売上高", "1000", credit_vendor="デンキヤギ株式会社"),
         make_simple_row("2", "2025/01/20", "売上高", "売掛金", "500", debit_vendor="デンキヤギ株式会社"),
         make_simple_row("3", "2025/01/25", "売掛金", "売上高", "1500", credit_vendor="ピクシブ株式会社"),
-        make_simple_row("4", "2025/01/30", "売掛金", "売上高", "2000"),
+        make_simple_row("4", "2025/01/30", "売掛金", "売上高", "2000", summary="スポット案件"),
     ]
 
     print_summary(rows)
@@ -114,7 +124,7 @@ def test_print_summary_outputs_tsv(capsys):
     assert out[1] == "取引先\t件数\t合計"
     assert out[2] == "デンキヤギ株式会社\t2\t500"
     assert out[3] == "ピクシブ株式会社\t1\t1500"
-    assert out[4] == f"{NO_CLIENT_LABEL}\t1\t2000"
+    assert out[4] == "摘要: スポット案件\t1\t2000"
 
 
 def test_load_target_rows_includes_only_target_year(tmp_path):
