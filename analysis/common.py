@@ -90,13 +90,19 @@ def select_journals(target_year: int, *, years: int = 3, data_dir: str = "data")
     return dict(sorted(selected.items()))
 
 
-def add_journal_args(parser: argparse.ArgumentParser, *, allow_multiple_paths: bool = True) -> None:
+def add_journal_args(
+    parser: argparse.ArgumentParser,
+    *,
+    allow_multiple_paths: bool = True,
+    include_years: bool = True,
+) -> None:
     """仕訳帳CLIで共通利用する引数を追加する。"""
     nargs = "*" if allow_multiple_paths else "?"
     help_text = "仕訳帳CSVファイルのパス（複数可）" if allow_multiple_paths else "仕訳帳CSVファイルのパス"
     parser.add_argument("journals", nargs=nargs, help=help_text)
     parser.add_argument("--target", type=int, help="分析対象年度")
-    parser.add_argument("--years", type=int, default=3, help="比較期間の年数（デフォルト: 3）")
+    if include_years:
+        parser.add_argument("--years", type=int, default=3, help="比較期間の年数（デフォルト: 3）")
 
 
 def resolve_journals(args: argparse.Namespace, parser: argparse.ArgumentParser) -> ResolvedJournals:
@@ -109,7 +115,8 @@ def resolve_journals(args: argparse.Namespace, parser: argparse.ArgumentParser) 
         parser.error("--target または仕訳帳CSVファイルのパスを指定してください")
 
     if args.target is not None:
-        selected = select_journals(args.target, years=args.years)
+        years = getattr(args, "years", 1)
+        selected = select_journals(args.target, years=years)
         return ResolvedJournals(args.target, selected[args.target], list(selected.values()))
 
     return ResolvedJournals(None, None, journals)
