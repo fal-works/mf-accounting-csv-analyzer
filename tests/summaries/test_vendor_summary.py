@@ -35,6 +35,20 @@ def test_summarize_vendors_basic():
     ]
 
 
+def test_summarize_vendors_counts_both_sides():
+    rows = [
+        make_simple_row("1", "2025/01/10", "通信費", "普通預金", "1000",
+                        debit_vendor="NTT", credit_vendor="みずほ銀行"),
+    ]
+
+    result = summarize_vendors(rows)
+
+    assert result == [
+        ("NTT", 1, 1000),
+        ("みずほ銀行", 1, 1000),
+    ]
+
+
 def test_summarize_vendors_uses_summary_for_empty_vendor():
     rows = [
         make_simple_row("1", "2025/01/10", "通信費", "普通預金", "1000", summary="インターネット利用料"),
@@ -82,7 +96,7 @@ def test_summarize_vendors_summary_label_sorted_last():
 
     result = summarize_vendors(rows)
 
-    assert [v for v, _, _ in result] == ["Amazon", "NTT", "摘要: 回線料金"]
+    assert [v for v, *_ in result] == ["Amazon", "NTT", "摘要: 回線料金"]
 
 
 def test_summarize_vendors_includes_credit_vendor():
@@ -93,7 +107,7 @@ def test_summarize_vendors_includes_credit_vendor():
     result = summarize_vendors(rows)
 
     assert len(result) == 1
-    assert result[0][0] == "みずほ銀行"
+    assert result[0] == ("みずほ銀行", 1, 1000)
 
 
 def test_summarize_vendors_empty():

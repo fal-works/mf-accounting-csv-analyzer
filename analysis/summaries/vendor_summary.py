@@ -8,7 +8,7 @@ from analysis.common import (
     run_summary_cli,
     vendor_label,
 )
-from analysis.journal_columns import SIDES, SUMMARY
+from analysis.journal_columns import DEBIT_SIDE, SIDES, SUMMARY
 
 MULTI_YEAR = False
 
@@ -37,17 +37,16 @@ def summarize_vendors(
             vendor_total[vendor] += amount
             found = True
         if not found:
-            # どちらのサイドにも取引先がない行は摘要で代替する
+            # どちらのサイドにも取引先がない行は摘要で代替する。
+            # 借方・貸方は同額のため、借方金額のみ使用する。
             label = vendor_label("", row[SUMMARY])
             if label is None:
                 continue
-            amount = max(
-                (parse_amount(row[side.amount]) or 0 for side in SIDES),
-                default=0,
-            )
-            if amount > 0:
-                vendor_count[label] += 1
-                vendor_total[label] += amount
+            amount = parse_amount(row[DEBIT_SIDE.amount]) or 0
+            if amount <= 0:
+                continue
+            vendor_count[label] += 1
+            vendor_total[label] += amount
 
     vendors = sorted(vendor_count, key=lambda v: (v.startswith("摘要: "), v))
     return [
