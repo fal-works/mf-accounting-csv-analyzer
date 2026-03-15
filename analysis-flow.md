@@ -15,11 +15,15 @@
 
 ## ステップ1: スクリプト実行
 
-チェックスクリプトと科目別サマリーを実行し、機械的に検出できる情報を収集する。
+サマリーとチェックスクリプトを実行し、機械的に検出できる情報を収集する。
+サマリーで全体像を把握してからチェック結果を評価する。
 
 ```bash
-uv run python -m analysis.checks.runner --target 2025
 uv run python -m analysis.tools.account_summary --target 2025
+uv run python -m analysis.tools.monthly_trend --target 2025
+uv run python -m analysis.tools.vendor_summary --target 2025
+uv run python -m analysis.tools.tax_summary --target 2025
+uv run python -m analysis.checks.runner --target 2025
 ```
 
 - 個別チェックスクリプトの一覧とそれぞれの目的は [analysis/checks/catalog.md](analysis/checks/catalog.md) を参照。
@@ -29,10 +33,13 @@ uv run python -m analysis.tools.account_summary --target 2025
 
 ステップ1の出力を評価し、要確認事項を特定する。
 
+- **サマリーの確認**:
+  - 科目別: 最大値・最小値が極端な科目は、桁間違いや一括計上の可能性を疑う。
+  - 月次推移: 特定月だけ突出している科目は、計上ミスや期間帰属の誤りを疑う。
+  - 取引先別: 異常な支払いや取引先の記録漏れを確認する。
+  - 税区分別: 税区分ごとの合計を確認し、消費税申告との整合性を検証する。
 - **チェック警告の偽陽性分離**:
   [analysis/checks/catalog.md](analysis/checks/catalog.md) に記載の「よくある偽陽性」も参考に、AIが要確認の警告を選別する。
-- **科目別サマリーの確認**:
-  最大値・最小値が極端な科目は、桁間違いや一括計上の可能性を疑う。
 
 ## ステップ3: 個別取引の深掘り
 

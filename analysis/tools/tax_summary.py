@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""仕訳帳の勘定科目別金額サマリーを出力する。"""
+"""仕訳帳の税区分別金額サマリーを出力する。"""
 
 import argparse
 import sys
@@ -7,9 +7,7 @@ from collections import defaultdict
 
 from analysis.common import (
     DataFileError,
-    SKIP_ACCOUNTS_COMMON,
     load_journal,
-    median,
     parse_amount,
     parse_date,
     select_journals,
@@ -17,44 +15,43 @@ from analysis.common import (
 from analysis.journal_columns import SIDES, TX_DATE
 
 
-def summarize_accounts(all_rows: list[dict[str, str]]) -> list[tuple[str, int, int, float, float, int, int]]:
-    """勘定科目ごとの件数・合計・平均・中央値・最小・最大を返す。"""
-    account_amounts: dict[str, list[int]] = defaultdict(list)
+def summarize_tax(
+    all_rows: list[dict[str, str]],
+) -> list[tuple[str, str, int, int]]:
+    """税区分ごとの件数・合計を、借方・貸方それぞれで返す。
+
+    Returns:
+        [(税区分, 借方/貸方, 件数, 合計), ...]
+    """
+    # (税区分, 借方/貸方ラベル) -> 金額リスト
+    tax_amounts: dict[tuple[str, str], list[int]] = defaultdict(list)
 
     for row in all_rows:
         for side in SIDES:
-            account = row[side.account]
-            if not account or account in SKIP_ACCOUNTS_COMMON:
+            tax = row[side.tax].strip()
+            if not tax:
                 continue
             amount = parse_amount(row[side.amount])
             if amount is None or amount <= 0:
                 continue
-            account_amounts[account].append(amount)
+            tax_amounts[(tax, side.label)].append(amount)
 
-    summaries: list[tuple[str, int, int, float, float, int, int]] = []
-    for account in sorted(account_amounts):
-        amounts = account_amounts[account]
+    summaries: list[tuple[str, str, int, int]] = []
+    for (tax, side_label) in sorted(tax_amounts):
+        amounts = tax_amounts[(tax, side_label)]
         total = sum(amounts)
         count = len(amounts)
-        summaries.append((
-            account,
-            count,
-            total,
-            total / count,
-            median(amounts),
-            min(amounts),
-            max(amounts),
-        ))
+        summaries.append((tax, side_label, count, total))
 
     return summaries
 
 
 def print_summary(all_rows: list[dict[str, str]]) -> None:
-    """TSV 形式で勘定科目別サマリーを標準出力する。"""
-    print("[勘定科目別サマリー]")
-    print("科目\t件数\t合計\t平均\t中央値\t最小\t最大")
-    for account, count, total, avg, med, lo, hi in summarize_accounts(all_rows):
-        print(f"{account}\t{count}\t{total}\t{avg:.0f}\t{med:.0f}\t{lo}\t{hi}")
+    """TSV 形式で税区分別サマリーを標準出力する。"""
+    print("[税区分別サマリー]")
+    print("税区分\t借方/貸方\t件数\t合計")
+    for tax, side_label, count, total in summarize_tax(all_rows):
+        print(f"{tax}\t{side_label}\t{count}\t{total}")
     print()
 
 
@@ -71,7 +68,7 @@ def load_target_rows(target_year: int, *, years: int = 3, data_dir: str = "data"
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="仕訳帳の勘定科目別金額サマリー")
+    parser = argparse.ArgumentParser(description="仕訳帳の税区分別金額サマリー")
     parser.add_argument("journals", nargs="*", help="仕訳帳CSVファイルのパス（複数可）")
     parser.add_argument("--target", type=int, help="分析対象年度")
     parser.add_argument("--years", type=int, default=3, help="比較期間の年数（デフォルト: 3）")
