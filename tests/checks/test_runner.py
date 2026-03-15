@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from analysis.checks.runner import discover_checks, discover_journals, main, run_all
-from analysis.common import CheckResult, DataFileError
+from analysis.checks.runner import discover_checks, main, run_all
+from analysis.common import CheckResult, DataFileError, discover_journals, select_journals
 from analysis.journal_columns import TX_NO, JOURNAL_COLUMNS
 from conftest import make_simple_row
 
@@ -65,6 +65,30 @@ class TestDiscoverJournals:
     def test_raises_when_no_journal_found(self, tmp_path):
         with pytest.raises(DataFileError):
             discover_journals(str(tmp_path))
+
+
+class TestSelectJournals:
+    def test_selects_target_year_window(self, tmp_path):
+        for year in (2022, 2023, 2024, 2025):
+            journal = tmp_path / str(year) / JOURNAL_FILE
+            journal.parent.mkdir()
+            _write_csv([], journal)
+
+        selected = select_journals(2025, years=3, data_dir=str(tmp_path))
+
+        assert selected == {
+            2023: tmp_path / "2023" / JOURNAL_FILE,
+            2024: tmp_path / "2024" / JOURNAL_FILE,
+            2025: tmp_path / "2025" / JOURNAL_FILE,
+        }
+
+    def test_raises_when_target_year_missing(self, tmp_path):
+        journal = tmp_path / "2024" / JOURNAL_FILE
+        journal.parent.mkdir()
+        _write_csv([], journal)
+
+        with pytest.raises(DataFileError):
+            select_journals(2025, data_dir=str(tmp_path))
 
 
 class TestRunAll:

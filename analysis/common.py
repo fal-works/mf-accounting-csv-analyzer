@@ -2,12 +2,18 @@
 
 import argparse
 import csv
+import json
 import sys
 from datetime import date, datetime
 from pathlib import Path
 from typing import Callable, NamedTuple
 
 from analysis.journal_columns import JOURNAL_COLUMNS
+
+_JOURNAL_SCHEMA = json.loads(
+    (Path(__file__).resolve().parents[1] / "schema" / "journal.json").read_text(encoding="utf-8")
+)
+_JOURNAL_SAVE_NAME = _JOURNAL_SCHEMA["saveName"]
 
 
 class CheckResult(NamedTuple):
@@ -40,6 +46,41 @@ def load_journal(path: str | Path) -> list[dict[str, str]]:
     if missing_columns:
         raise DataFileError(f"仕訳帳CSVの必須カラムが不足しています: {', '.join(missing_columns)}")
     return rows
+
+
+def discover_journals(data_dir: str = "data") -> dict[int, Path]:
+    """data/{年度}/仕訳帳.csv を自動検出し、{年度: パス} を返す。"""
+    journals: dict[int, Path] = {}
+
+    for path in sorted(Path(data_dir).glob(f"*/{_JOURNAL_SAVE_NAME}")):
+        try:
+            year = int(path.parent.name)
+        except ValueError:
+            continue
+        journals[year] = path
+
+    if not journals:
+        raise DataFileError(f"仕訳帳CSVが見つかりません: {data_dir}/*/{_JOURNAL_SAVE_NAME}")
+
+    return journals
+
+
+def select_journals(target_year: int, *, years: int = 3, data_dir: str = "data") -> dict[int, Path]:
+    """対象年度と比較期間から使用する仕訳帳を選定する。"""
+    if years < 1:
+        raise DataFileError("--years には 1 以上を指定してください")
+
+    discovered = discover_journals(data_dir)
+    if target_year not in discovered:
+        raise DataFileError(f"対象年度の仕訳帳CSVが見つかりません: {target_year}")
+
+    start_year = target_year - years + 1
+    selected = {
+        year: path
+        for year, path in discovered.items()
+        if start_year <= year <= target_year
+    }
+    return dict(sorted(selected.items()))
 
 
 def run_check_cli(

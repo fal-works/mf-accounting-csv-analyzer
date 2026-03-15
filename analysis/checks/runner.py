@@ -18,20 +18,21 @@
 
 import argparse
 import importlib
-import json
 import pkgutil
 import sys
 from pathlib import Path
 from typing import Callable
 
 import analysis.checks as checks
-from analysis.common import CheckResult, DataFileError, load_journal, parse_date, print_header
-from analysis.journal_columns import TX_DATE
-
-_JOURNAL_SCHEMA = json.loads(
-    (Path(__file__).resolve().parents[2] / "schema" / "journal.json").read_text(encoding="utf-8")
+from analysis.common import (
+    CheckResult,
+    DataFileError,
+    load_journal,
+    parse_date,
+    print_header,
+    select_journals,
 )
-_JOURNAL_SAVE_NAME = _JOURNAL_SCHEMA["saveName"]
+from analysis.journal_columns import TX_DATE
 
 
 def discover_checks() -> list[tuple[str, Callable, bool]]:
@@ -69,41 +70,6 @@ def discover_checks() -> list[tuple[str, Callable, bool]]:
         found.append((short_name, check_fn, multi_year))
 
     return sorted(found, key=lambda x: x[0])
-
-
-def discover_journals(data_dir: str = "data") -> dict[int, Path]:
-    """data/{年度}/仕訳帳.csv を自動検出し、{年度: パス} を返す。"""
-    journals: dict[int, Path] = {}
-
-    for path in sorted(Path(data_dir).glob(f"*/{_JOURNAL_SAVE_NAME}")):
-        try:
-            year = int(path.parent.name)
-        except ValueError:
-            continue
-        journals[year] = path
-
-    if not journals:
-        raise DataFileError(f"仕訳帳CSVが見つかりません: {data_dir}/*/{_JOURNAL_SAVE_NAME}")
-
-    return journals
-
-
-def select_journals(target_year: int, *, years: int = 3, data_dir: str = "data") -> dict[int, Path]:
-    """対象年度と比較期間から使用する仕訳帳を選定する。"""
-    if years < 1:
-        raise DataFileError("--years には 1 以上を指定してください")
-
-    discovered = discover_journals(data_dir)
-    if target_year not in discovered:
-        raise DataFileError(f"対象年度の仕訳帳CSVが見つかりません: {target_year}")
-
-    start_year = target_year - years + 1
-    selected = {
-        year: path
-        for year, path in discovered.items()
-        if start_year <= year <= target_year
-    }
-    return dict(sorted(selected.items()))
 
 
 def run_all(

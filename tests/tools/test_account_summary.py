@@ -1,8 +1,23 @@
 """account_summary.py のテスト。"""
 
+import csv
+import sys
+from pathlib import Path
+
+import pytest
+
 from analysis.common import median
-from analysis.tools.account_summary import print_summary, summarize_accounts
+from analysis.journal_columns import JOURNAL_COLUMNS, TX_NO
+from analysis.tools.account_summary import load_target_rows, main, print_summary, summarize_accounts
 from conftest import make_simple_row
+
+
+def _write_csv(rows: list[dict], path: Path) -> None:
+    with open(path, "w", encoding="utf-8", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=JOURNAL_COLUMNS)
+        writer.writeheader()
+        for row in rows:
+            writer.writerow(row)
 
 
 def test_summarize_accounts_excludes_skip_accounts():
@@ -37,3 +52,31 @@ def test_print_summary_outputs_tsv(capsys):
 def test_median_handles_even_and_odd_counts():
     assert median([1, 9, 5]) == 5.0
     assert median([1, 9, 5, 7]) == 6.0
+
+
+def test_load_target_rows_includes_only_target_year(tmp_path):
+    journal_2024 = tmp_path / "2024" / "仕訳帳.csv"
+    journal_2025 = tmp_path / "2025" / "仕訳帳.csv"
+    journal_2024.parent.mkdir()
+    journal_2025.parent.mkdir()
+    _write_csv([make_simple_row("2024", "2024/12/31", "通信費", "普通預金", "1000")], journal_2024)
+    _write_csv(
+        [
+            make_simple_row("cross", "2024/12/31", "消耗品費", "普通預金", "500"),
+            make_simple_row("2025", "2025/01/10", "通信費", "普通預金", "2000"),
+        ],
+        journal_2025,
+    )
+
+    rows = load_target_rows(2025, years=2, data_dir=str(tmp_path))
+
+    assert [row[TX_NO] for row in rows] == ["2025"]
+
+
+def test_main_rejects_target_and_paths_together(monkeypatch):
+    monkeypatch.setattr(sys, "argv", ["prog", "--target", "2025", "dummy.csv"])
+
+    with pytest.raises(SystemExit) as excinfo:
+        main()
+
+    assert excinfo.value.code == 2

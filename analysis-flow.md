@@ -30,7 +30,7 @@ uv run python -m analysis.checks.runner --target 2025 --years 5
 uv run python -m analysis.checks.runner --list
 
 # 科目別サマリー
-uv run python -m analysis.tools.account_summary data/*/仕訳帳.csv
+uv run python -m analysis.tools.account_summary --target 2025
 ```
 
 個別チェックスクリプトの一覧とそれぞれの目的は [analysis/checks/catalog.md](analysis/checks/catalog.md) を参照。
