@@ -18,31 +18,12 @@
 チェックスクリプトと科目別サマリーを実行し、機械的に検出できる情報を収集する。
 
 ```bash
-# チェック一括実行（推奨）
 uv run python -m analysis.checks.runner --target 2025
-
-# チェック選択実行・除外
-uv run python -m analysis.checks.runner --target 2025 --only check_tax,check_dates
-uv run python -m analysis.checks.runner --target 2025 --skip check_yoy
-uv run python -m analysis.checks.runner --target 2025 --years 5
-
-# チェック一覧表示
-uv run python -m analysis.checks.runner --list
-
-# 科目別サマリー
 uv run python -m analysis.tools.account_summary --target 2025
 ```
 
-個別チェックスクリプトの一覧とそれぞれの目的は [analysis/checks/catalog.md](analysis/checks/catalog.md) を参照。
-
-### 期間選択の指針
-
-- チェックスクリプトの種類として、対象年度だけで完結するものと、過去年度との比較が必要なものがある。
-- `--target` を指定すると、ランナーが `data/` 以下から必要なデータを自動選定し、
-  チェックの種類に応じて適切な範囲のデータを渡す。
-- 複数年度比較に使う期間は `--years` で指定可能だが、
-  デフォルトで `3` （対象年度を含む直近3年）となっており、通常はこれで十分。
-  全年度横断は事業規模の変動期などを含みやすく、偽陽性が増える。
+- 個別チェックスクリプトの一覧とそれぞれの目的は [analysis/checks/catalog.md](analysis/checks/catalog.md) を参照。
+- 期間選択者、個別チェックの選択実行・除外など、ランナーの応用オプションは `--help` を参照。
 
 ## ステップ2: 結果の評価
 

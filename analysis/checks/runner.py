@@ -140,12 +140,31 @@ def print_summary(results: dict[str, CheckResult]) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="チェックスクリプト一括実行ランナー",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""\
+期間選択:
+  --target を指定すると、data/ 以下から必要なデータを自動選定し、
+  チェックの種類（単年度/複数年度）に応じて適切な範囲のデータを渡す。
+  複数年度比較の期間は --years で変更できるが、デフォルト（3年）で
+  通常は十分。全年度横断は事業規模の変動期を含みやすく偽陽性が増える。
+
+チェック名の確認:
+  --list で表示される名前を --only / --skip に指定する。""",
     )
     parser.add_argument("--target", type=int, help="分析対象年度")
-    parser.add_argument("--years", type=int, default=3, help="比較期間の年数（デフォルト: 3）")
+    parser.add_argument(
+        "--years",
+        type=int,
+        default=3,
+        help="複数年度比較の期間（対象年度を含む年数、デフォルト: 3）",
+    )
     parser.add_argument("--only", help="実行するチェック名（カンマ区切り）")
     parser.add_argument("--skip", help="スキップするチェック名（カンマ区切り）")
-    parser.add_argument("--list", action="store_true", help="利用可能なチェック一覧を表示")
+    parser.add_argument(
+        "--list",
+        action="store_true",
+        help="利用可能なチェック一覧を表示して終了",
+    )
     args = parser.parse_args()
 
     if args.list:
